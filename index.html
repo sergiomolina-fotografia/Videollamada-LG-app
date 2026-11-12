@@ -16,13 +16,19 @@
   --accent: #4f8eff;
   --danger: #ff4f6a;
   --ok: #4fff9a;
+  --sz: 1;
   color-scheme: dark;
+}
+/* TV: pantalla grande → escala todo */
+@media (min-width: 1200px) {
+  :root { --sz: 1.6; }
+  html { font-size: calc(16px * 1.6); }
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
   height: 100%; background: var(--bg); color: var(--fg);
   font-family: 'Space Grotesk', system-ui, sans-serif;
-  font-size: 16px; overflow: hidden;
+  overflow: hidden;
 }
 #lobby {
   height: 100%; display: flex; flex-direction: column;
@@ -37,7 +43,7 @@ html, body {
 .logo span { color:var(--accent); }
 .card {
   background:var(--surface); border:1px solid var(--border);
-  border-radius:20px; padding:36px 40px; width:100%; max-width:480px;
+  border-radius:20px; padding:36px 40px; width:100%; max-width:560px;
   display:flex; flex-direction:column; gap:24px;
 }
 .card-title { font-size:1.1rem; font-weight:700; }
@@ -46,7 +52,7 @@ html, body {
   border-radius:12px; padding:20px 24px;
 }
 .code-value {
-  font-size:clamp(1.6rem,5vw,2.4rem); font-weight:700;
+  font-size:clamp(2rem,5vw,3rem); font-weight:700;
   letter-spacing:.18em; color:var(--accent); font-variant-numeric:tabular-nums;
 }
 .code-hint { font-size:.78rem; color:var(--muted); margin-top:4px; }
@@ -70,19 +76,34 @@ html, body {
 .input-group { display:flex; gap:10px; }
 input[type="text"] {
   flex:1; background:var(--bg); border:1px solid var(--border);
-  border-radius:10px; padding:12px 16px; color:var(--fg);
-  font-family:inherit; font-size:1rem; letter-spacing:.1em; outline:none; transition:border-color .2s;
+  border-radius:10px; padding:14px 16px; color:var(--fg);
+  font-family:inherit; font-size:1.1rem; letter-spacing:.1em; outline:none; transition:border-color .2s;
 }
 input::placeholder { color:var(--muted); }
 input:focus { border-color:var(--accent); }
 .btn {
   background:var(--accent); color:#fff; border:none; border-radius:10px;
-  padding:12px 22px; font-family:inherit; font-size:.95rem; font-weight:700;
+  padding:14px 26px; font-family:inherit; font-size:1rem; font-weight:700;
   cursor:pointer; letter-spacing:.04em; transition:opacity .15s, transform .1s; white-space:nowrap;
 }
 .btn:hover { opacity:.88; }
 .btn:active { transform:scale(.97); }
 .btn:disabled { opacity:.4; cursor:not-allowed; }
+.btn.danger { background:var(--danger); }
+
+/* INCOMING CALL OVERLAY */
+#incoming {
+  display:none; position:fixed; inset:0; z-index:100;
+  background:rgba(0,0,0,.85); backdrop-filter:blur(8px);
+  align-items:center; justify-content:center; flex-direction:column; gap:28px;
+}
+#incoming.active { display:flex; }
+.incoming-icon { font-size:5rem; animation:ring .6s ease-in-out infinite alternate; }
+@keyframes ring { from{transform:rotate(-15deg)} to{transform:rotate(15deg)} }
+.incoming-title { font-size:1.6rem; font-weight:700; color:#fff; }
+.incoming-hint { font-size:1rem; color:var(--muted); }
+.incoming-btns { display:flex; gap:20px; }
+.incoming-btns .btn { padding:18px 40px; font-size:1.1rem; border-radius:14px; }
 
 /* CALL VIEW */
 #callview { height:100%; position:relative; background:#000; display:none; }
@@ -90,57 +111,55 @@ input:focus { border-color:var(--accent); }
 #remote-video { width:100%; height:100%; object-fit:cover; display:block; background:#000; }
 #local-video {
   position:absolute;
-  bottom:max(80px, calc(env(safe-area-inset-bottom,0px) + 72px));
+  bottom:max(90px, calc(env(safe-area-inset-bottom,0px) + 80px));
   right:max(16px, env(safe-area-inset-right,0px));
-  width:clamp(100px,20vw,200px); aspect-ratio:4/3;
+  width:clamp(120px,18vw,220px); aspect-ratio:4/3;
   object-fit:cover; border-radius:12px;
-  border:2px solid rgba(255,255,255,.2); background:#111; cursor:pointer;
+  border:2px solid rgba(255,255,255,.25); background:#111; cursor:pointer;
 }
 .call-overlay {
   position:absolute; inset:0; display:flex; flex-direction:column;
   align-items:center; justify-content:flex-end; pointer-events:none;
-  padding-bottom:max(24px, env(safe-area-inset-bottom,0px));
+  padding-bottom:max(28px, env(safe-area-inset-bottom,0px));
 }
 .call-controls {
   display:flex; gap:16px; align-items:center; pointer-events:all;
-  background:rgba(10,10,15,.75); backdrop-filter:blur(16px);
-  border:1px solid rgba(255,255,255,.08); border-radius:999px; padding:12px 20px;
+  background:rgba(10,10,15,.8); backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.1); border-radius:999px; padding:14px 24px;
 }
 .ctrl-btn {
-  width:52px; height:52px; border-radius:50%; border:none;
+  width:60px; height:60px; border-radius:50%; border:none;
   display:flex; align-items:center; justify-content:center;
-  font-size:1.3rem; cursor:pointer; transition:transform .1s, opacity .15s;
-  background:rgba(255,255,255,.1); color:#fff;
+  font-size:1.5rem; cursor:pointer; transition:transform .1s, opacity .15s;
+  background:rgba(255,255,255,.12); color:#fff;
 }
 .ctrl-btn:hover { opacity:.85; }
 .ctrl-btn:active { transform:scale(.93); }
-.ctrl-btn.muted { background:rgba(255,79,106,.3); color:var(--danger); }
-.ctrl-btn.end { background:var(--danger); width:60px; height:60px; font-size:1.5rem; }
+.ctrl-btn.muted { background:rgba(255,79,106,.35); color:var(--danger); }
+.ctrl-btn.end { background:var(--danger); width:68px; height:68px; font-size:1.7rem; }
 .call-info {
   position:absolute; top:max(16px, env(safe-area-inset-top,0px));
   left:max(16px, env(safe-area-inset-left,0px));
   pointer-events:none; display:flex; align-items:center; gap:8px;
-  background:rgba(10,10,15,.65); backdrop-filter:blur(10px);
-  border-radius:999px; padding:6px 14px; font-size:.82rem; color:rgba(255,255,255,.75);
+  background:rgba(10,10,15,.7); backdrop-filter:blur(10px);
+  border-radius:999px; padding:8px 16px; font-size:.9rem; color:rgba(255,255,255,.8);
 }
 .rec-dot {
-  width:7px; height:7px; border-radius:50%;
+  width:8px; height:8px; border-radius:50%;
   background:var(--ok); box-shadow:0 0 5px var(--ok); animation:pulse 2s ease-in-out infinite;
 }
 #no-remote {
   position:absolute; inset:0; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; gap:12px;
-  color:var(--muted); font-size:.95rem; pointer-events:none;
+  align-items:center; justify-content:center; gap:14px;
+  color:var(--muted); font-size:1rem; pointer-events:none;
 }
-#no-remote .big-icon { font-size:3rem; opacity:.3; }
-@media(max-width:480px) {
-  .card { padding:24px 20px; }
-  .code-value { font-size:2rem; }
-}
+#no-remote .big-icon { font-size:3.5rem; opacity:.3; }
+#lobby-status { font-size:.9rem; color:var(--muted); min-height:1.4em; }
 </style>
 </head>
 <body>
 
+<!-- LOBBY -->
 <div id="lobby">
   <div class="logo"><span>■</span> Video Call</div>
   <div class="card">
@@ -160,10 +179,22 @@ input:focus { border-color:var(--accent); }
       <input type="text" id="remote-code-input" placeholder="CÓDIGO" maxlength="6" autocomplete="off" spellcheck="false">
       <button class="btn" id="call-btn" disabled>Llamar</button>
     </div>
-    <div id="lobby-status" style="font-size:.85rem;color:var(--muted);min-height:1.2em;"></div>
+    <div id="lobby-status"></div>
   </div>
 </div>
 
+<!-- INCOMING CALL -->
+<div id="incoming">
+  <div class="incoming-icon">📞</div>
+  <div class="incoming-title">Llamada entrante</div>
+  <div class="incoming-hint" id="incoming-from">alguien quiere conectarse</div>
+  <div class="incoming-btns">
+    <button class="btn danger" id="btn-reject">Rechazar</button>
+    <button class="btn" id="btn-answer">Atender 📹</button>
+  </div>
+</div>
+
+<!-- CALL VIEW -->
 <div id="callview">
   <video id="remote-video" autoplay playsinline></video>
   <div id="no-remote">
@@ -188,99 +219,168 @@ input:focus { border-color:var(--accent); }
 
 <script>
 (function(){
-  var peer=null, localStream=null, currentCall=null, myCode=null;
+  var peer=null, localStream=null, currentCall=null, pendingCall=null, myCode=null;
   var callStart=null, timerInterval=null, audioEnabled=true, videoEnabled=true;
 
-  var lobby=document.getElementById('lobby');
-  var callview=document.getElementById('callview');
-  var peerDot=document.getElementById('peer-dot');
-  var peerStatus=document.getElementById('peer-status');
-  var myCodeEl=document.getElementById('my-code');
-  var inputEl=document.getElementById('remote-code-input');
-  var callBtn=document.getElementById('call-btn');
-  var lobbyMsg=document.getElementById('lobby-status');
-  var remoteVid=document.getElementById('remote-video');
-  var localVid=document.getElementById('local-video');
-  var noRemote=document.getElementById('no-remote');
-  var timerEl=document.getElementById('call-timer');
+  var lobby     = document.getElementById('lobby');
+  var incomingEl= document.getElementById('incoming');
+  var callview  = document.getElementById('callview');
+  var peerDot   = document.getElementById('peer-dot');
+  var peerStatus= document.getElementById('peer-status');
+  var myCodeEl  = document.getElementById('my-code');
+  var inputEl   = document.getElementById('remote-code-input');
+  var callBtn   = document.getElementById('call-btn');
+  var lobbyMsg  = document.getElementById('lobby-status');
+  var remoteVid = document.getElementById('remote-video');
+  var localVid  = document.getElementById('local-video');
+  var noRemote  = document.getElementById('no-remote');
+  var timerEl   = document.getElementById('call-timer');
+  var incomingFrom = document.getElementById('incoming-from');
 
+  /* ── helpers ── */
   function genCode(){
     var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s='';
     for(var i=0;i<6;i++) s+=c[Math.floor(Math.random()*c.length)];
     return s;
   }
 
-  function getMedia(cb){
-    navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720}},audio:true})
-      .then(function(s){ localStream=s; localVid.srcObject=s; cb(null,s); })
+  function forcePlay(vid){
+    if(!vid.srcObject) return;
+    vid.play().catch(function(){
+      // webOS: intentar de nuevo tras interacción
+      document.addEventListener('click', function once(){
+        vid.play().catch(function(){});
+        document.removeEventListener('click', once);
+      }, {once:true});
+    });
+  }
+
+  function getMedia(withAudio, cb){
+    var constraints = { video: { width:{ideal:1280}, height:{ideal:720} }, audio: withAudio };
+    navigator.mediaDevices.getUserMedia(constraints)
+      .then(function(s){ cb(null,s); })
       .catch(function(){
-        navigator.mediaDevices.getUserMedia({video:true,audio:false})
-          .then(function(s){ localStream=s; localVid.srcObject=s; cb(null,s); })
+        // fallback: solo video sin resolución ideal
+        navigator.mediaDevices.getUserMedia({ video:true, audio:false })
+          .then(function(s){ cb(null,s); })
           .catch(function(e){ cb(e); });
       });
   }
 
+  /* ── PeerJS init ── */
   function initPeer(){
-    myCode=genCode();
-    myCodeEl.textContent=myCode;
-    peer=new Peer(myCode,{
+    myCode = genCode();
+    myCodeEl.textContent = myCode;
+    peer = new Peer(myCode, {
       host:'0.peerjs.com', port:443, path:'/', secure:true, debug:0,
-      config:{iceServers:[
+      config:{ iceServers:[
         {urls:'stun:stun.l.google.com:19302'},
         {urls:'stun:stun1.l.google.com:19302'},
         {urls:'stun:stun.cloudflare.com:3478'}
       ]}
     });
-    peer.on('open',function(){
-      peerDot.className='status-dot ready'; peerStatus.textContent='Listo'; callBtn.disabled=false;
+    peer.on('open', function(){
+      peerDot.className='status-dot ready';
+      peerStatus.textContent='Listo';
+      callBtn.disabled=false;
     });
-    peer.on('error',function(err){
+    peer.on('error', function(err){
       if(err.type==='unavailable-id'){ peer.destroy(); initPeer(); return; }
-      peerDot.className='status-dot error'; peerStatus.textContent='Error';
+      peerDot.className='status-dot error';
+      peerStatus.textContent='Error';
       lobbyMsg.textContent='Error: '+(err.message||err.type);
     });
-    peer.on('disconnected',function(){
-      peerDot.className='status-dot waiting'; peerStatus.textContent='Reconectando…';
-      try{peer.reconnect();}catch(e){}
+    peer.on('disconnected', function(){
+      peerDot.className='status-dot waiting';
+      peerStatus.textContent='Reconectando…';
+      try{ peer.reconnect(); }catch(e){}
     });
-    peer.on('call',function(call){
-      lobbyMsg.textContent='Llamada entrante…';
-      getMedia(function(err,stream){
-        if(err){ lobbyMsg.textContent='Sin acceso a cámara: '+err.message; return; }
-        call.answer(stream); setupCall(call);
-      });
+    peer.on('call', function(call){
+      // guardar llamada entrante y mostrar pantalla de atender
+      pendingCall = call;
+      incomingFrom.textContent = 'Código: ' + call.peer;
+      incomingEl.classList.add('active');
     });
   }
 
-  callBtn.addEventListener('click',function(){
-    var code=inputEl.value.trim().toUpperCase();
+  /* ── Atender / Rechazar ── */
+  document.getElementById('btn-answer').addEventListener('click', function(){
+    incomingEl.classList.remove('active');
+    if(!pendingCall) return;
+    var call = pendingCall; pendingCall = null;
+    lobbyMsg.textContent = 'Abriendo cámara…';
+    getMedia(true, function(err, stream){
+      if(err){
+        // TV sin cámara: atender sin video local igual
+        stream = null;
+      }
+      localStream = stream;
+      if(stream){ localVid.srcObject=stream; forcePlay(localVid); }
+      call.answer(stream || createEmptyStream());
+      setupCall(call);
+    });
+  });
+
+  document.getElementById('btn-reject').addEventListener('click', function(){
+    incomingEl.classList.remove('active');
+    if(pendingCall){ try{ pendingCall.close(); }catch(e){} pendingCall=null; }
+  });
+
+  /* ── Llamar ── */
+  callBtn.addEventListener('click', function(){
+    var code = inputEl.value.trim().toUpperCase();
     if(!code){ lobbyMsg.textContent='Ingresá el código.'; return; }
     if(code===myCode){ lobbyMsg.textContent='Ese es tu propio código.'; return; }
-    lobbyMsg.textContent='Accediendo a la cámara…'; callBtn.disabled=true;
-    getMedia(function(err,stream){
-      if(err){ lobbyMsg.textContent='Sin acceso a cámara: '+err.message; callBtn.disabled=false; return; }
-      lobbyMsg.textContent='Llamando a '+code+'…';
-      var call=peer.call(code,stream);
+    lobbyMsg.textContent='Abriendo cámara…'; callBtn.disabled=true;
+    getMedia(true, function(err, stream){
+      if(err){
+        // sin cámara: llamar igual sin video local
+        stream = null;
+        lobbyMsg.textContent='Sin cámara local. Llamando a '+code+'…';
+      } else {
+        lobbyMsg.textContent='Llamando a '+code+'…';
+      }
+      localStream = stream;
+      if(stream){ localVid.srcObject=stream; forcePlay(localVid); }
+      var call = peer.call(code, stream || createEmptyStream());
       if(!call){ lobbyMsg.textContent='No se pudo conectar. Verificá el código.'; callBtn.disabled=false; return; }
       setupCall(call);
     });
   });
 
-  inputEl.addEventListener('input',function(){ inputEl.value=inputEl.value.toUpperCase(); });
-  inputEl.addEventListener('keydown',function(e){ if(e.key==='Enter') callBtn.click(); });
+  /* stream vacío para browsers que no tienen cámara */
+  function createEmptyStream(){
+    try{
+      var ctx = new AudioContext();
+      var dest = ctx.createMediaStreamDestination();
+      return dest.stream;
+    }catch(e){ return null; }
+  }
 
+  inputEl.addEventListener('input', function(){ inputEl.value=inputEl.value.toUpperCase(); });
+  inputEl.addEventListener('keydown', function(e){ if(e.key==='Enter') callBtn.click(); });
+
+  /* ── Setup llamada activa ── */
   function setupCall(call){
-    currentCall=call;
-    call.on('stream',function(s){ remoteVid.srcObject=s; noRemote.style.display='none'; enterCallView(); });
-    call.on('close',function(){ hangup(); });
-    call.on('error',function(){ hangup(); });
-    setTimeout(function(){ if(currentCall) enterCallView(); },1500);
+    currentCall = call;
+    call.on('stream', function(remoteStream){
+      remoteVid.srcObject = remoteStream;
+      noRemote.style.display = 'none';
+      forcePlay(remoteVid);
+      enterCallView();
+    });
+    call.on('close', function(){ hangup(); });
+    call.on('error', function(){ hangup(); });
+    // si a los 2s no llegó stream, igual mostrar la pantalla
+    setTimeout(function(){ if(currentCall) enterCallView(); }, 2000);
   }
 
   function enterCallView(){
-    lobby.style.display='none'; callview.classList.add('active');
-    callStart=Date.now(); clearInterval(timerInterval);
-    timerInterval=setInterval(updateTimer,1000);
+    lobby.style.display='none';
+    callview.classList.add('active');
+    callStart=Date.now();
+    clearInterval(timerInterval);
+    timerInterval=setInterval(updateTimer, 1000);
   }
 
   function hangup(){
@@ -288,11 +388,13 @@ input:focus { border-color:var(--accent); }
     if(currentCall){ try{currentCall.close();}catch(e){} currentCall=null; }
     if(localStream){ localStream.getTracks().forEach(function(t){t.stop();}); localStream=null; }
     remoteVid.srcObject=null; localVid.srcObject=null;
-    noRemote.style.display=''; callview.classList.remove('active');
-    lobby.style.display=''; callBtn.disabled=false;
+    noRemote.style.display='';
+    callview.classList.remove('active');
+    lobby.style.display='';
+    callBtn.disabled=false;
     lobbyMsg.textContent='Llamada finalizada.';
     audioEnabled=true; videoEnabled=true; updateCtrlBtns();
-    try{if(document.exitFullscreen)document.exitFullscreen();}catch(e){}
+    try{ if(document.exitFullscreen) document.exitFullscreen(); }catch(e){}
   }
 
   function updateTimer(){
@@ -301,16 +403,17 @@ input:focus { border-color:var(--accent); }
     timerEl.textContent=m+':'+(s<10?'0':'')+s;
   }
 
-  document.getElementById('btn-end').addEventListener('click',hangup);
+  /* ── Controles en llamada ── */
+  document.getElementById('btn-end').addEventListener('click', hangup);
 
-  document.getElementById('btn-cam').addEventListener('click',function(){
+  document.getElementById('btn-cam').addEventListener('click', function(){
     if(!localStream) return;
     videoEnabled=!videoEnabled;
     localStream.getVideoTracks().forEach(function(t){t.enabled=videoEnabled;});
     updateCtrlBtns();
   });
 
-  document.getElementById('btn-mic').addEventListener('click',function(){
+  document.getElementById('btn-mic').addEventListener('click', function(){
     if(!localStream) return;
     audioEnabled=!audioEnabled;
     localStream.getAudioTracks().forEach(function(t){t.enabled=audioEnabled;});
@@ -323,9 +426,17 @@ input:focus { border-color:var(--accent); }
     mb.classList.toggle('muted',!audioEnabled); mb.textContent=audioEnabled?'🎙️':'🔇';
   }
 
-  localVid.addEventListener('click',function(){ localVid.classList.toggle('pip-swapped'); });
+  localVid.addEventListener('click', function(){
+    // swap esquina PiP
+    var r=localVid.style.right, l=localVid.style.left;
+    if(!l || l==='auto' || l===''){
+      localVid.style.right='auto'; localVid.style.left='max(16px, env(safe-area-inset-left,0px))';
+    } else {
+      localVid.style.left='auto'; localVid.style.right='max(16px, env(safe-area-inset-right,0px))';
+    }
+  });
 
-  document.getElementById('btn-fs').addEventListener('click',function(){
+  document.getElementById('btn-fs').addEventListener('click', function(){
     var el=document.documentElement;
     if(!document.fullscreenElement){
       if(el.requestFullscreen) el.requestFullscreen();
@@ -334,18 +445,17 @@ input:focus { border-color:var(--accent); }
   });
 
   var facingMode='user';
-  document.getElementById('btn-swap').addEventListener('click',function(){
+  document.getElementById('btn-swap').addEventListener('click', function(){
     if(!localStream||!currentCall) return;
-    facingMode=facingMode==='user'?'environment':'user';
-    navigator.mediaDevices.getUserMedia({video:{facingMode:facingMode},audio:audioEnabled})
+    facingMode = facingMode==='user' ? 'environment' : 'user';
+    navigator.mediaDevices.getUserMedia({video:{facingMode:facingMode}, audio:audioEnabled})
       .then(function(newStream){
         var vt=newStream.getVideoTracks()[0];
-        var sender=currentCall.peerConnection&&currentCall.peerConnection.getSenders
-          ?currentCall.peerConnection.getSenders().find(function(s){return s.track&&s.track.kind==='video';})
-          :null;
+        var pc=currentCall.peerConnection;
+        var sender=pc&&pc.getSenders ? pc.getSenders().find(function(s){return s.track&&s.track.kind==='video';}) : null;
         if(sender) sender.replaceTrack(vt);
         localStream.getVideoTracks().forEach(function(t){t.stop();});
-        localVid.srcObject=newStream; localStream=newStream;
+        localVid.srcObject=newStream; localStream=newStream; forcePlay(localVid);
       }).catch(function(){});
   });
 
