@@ -39,16 +39,61 @@ function msg(t,err){$('lobby-status').textContent=t||'';$('lobby-status').classN
 function code(){var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';for(var i=0;i<6;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
 function peerState(c,t){$('peer-dot').className='dot '+c;$('peer-status').textContent=t}
 function callMsg(t){$('call-message').textContent=t;$('call-message').classList.remove('hidden');setTimeout(function(){$('call-message').classList.add('hidden')},4500)}
-function play(v){if(!v.srcObject)return;var p=v.play();if(p&&p.catch)p.catch(function(){callMsg('Presioná OK o ENTER para reproducir el video.')})}
-function media(){
- return new Promise(function(resolve,reject){
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){reject(new Error('Este navegador no permite acceder a cámara y micrófono (getUserMedia).'));return}
-  var done=false,timeout=setTimeout(function(){if(!done){done=true;reject(new Error('La cámara tardó demasiado. Revisá el USB y los permisos del televisor.'))}},15000);
-  navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720}},audio:true}).then(function(s){if(done){s.getTracks().forEach(function(t){t.stop()});return}done=true;clearTimeout(timeout);resolve(s)}).catch(function(first){
-   navigator.mediaDevices.getUserMedia({video:true,audio:false}).then(function(s){if(done){s.getTracks().forEach(function(t){t.stop()});return}done=true;clearTimeout(timeout);callMsg('Cámara disponible, pero no se activó el micrófono.');resolve(s)}).catch(function(second){if(done)return;done=true;clearTimeout(timeout);reject(new Error('No se pudo abrir la cámara: '+(second.message||first.message||'verificá permisos y conexión USB.')))})
-  })
- })
+function play(v){
+  if(!v.srcObject)return;
+  var p=v.play();
+  if(p&&p.catch)p.catch(function(){
+    // webOS: requiere interacción del usuario para reproducir
+    callMsg('Presioná OK o ENTER para ver el video.');
+    document.addEventListener('keydown',function once(){v.play().catch(function(){});document.removeEventListener('keydown',once)},{once:true});
+    document.addEventListener('click',function once(){v.play().catch(function(){});document.removeEventListener('click',once)},{once:true});
+  });
 }
+
+// media(): intenta múltiples constraints de menos a más específico
+// crítico para webOS que rechaza constraints complejas
+function media(){
+  return new Promise(function(resolve,reject){
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+      reject(new Error('Este navegador no soporta getUserMedia.'));return;
+    }
+    // secuencia de intentos: webOS necesita constraints simples
+    var attempts=[
+      {video:true,audio:true},
+      {video:true,audio:false},
+      {video:{facingMode:'user'},audio:false},
+      {video:{width:640,height:480},audio:false},
+      {video:{width:{min:160,max:640},height:{min:120,max:480}},audio:false}
+    ];
+    var idx=0;
+    function tryNext(){
+      if(idx>=attempts.length){
+        reject(new Error('No se pudo abrir la cámara. Verificá permisos y conexión USB.'));return;
+      }
+      var c=attempts[idx++];
+      navigator.mediaDevices.getUserMedia(c)
+        .then(function(s){
+          if(!c.audio) callMsg('Cámara activada sin micrófono.');
+          resolve(s);
+        })
+        .catch(function(e){
+          // OverconstrainedError o NotSupportedError → probar siguiente
+          if(e.name==='OverconstrainedError'||e.name==='ConstraintNotSatisfiedError'||
+             e.name==='NotSupportedError'||e.name==='TypeError'){
+            tryNext();
+          } else if(e.name==='NotFoundError'||e.name==='DevicesNotFoundError'){
+            reject(new Error('No se encontró cámara. Verificá la conexión USB.'));
+          } else if(e.name==='NotAllowedError'||e.name==='PermissionDeniedError'){
+            reject(new Error('Permiso denegado. Aceptá el acceso a la cámara.'));
+          } else {
+            tryNext(); // en caso de error desconocido, seguir intentando
+          }
+        });
+    }
+    tryNext();
+  });
+}
+
 function setLocal(s){localStream=s;$('local-video').srcObject=s;play($('local-video'));audioOn=s.getAudioTracks().length>0;videoOn=s.getVideoTracks().length>0;controls()}
 function stopLocal(){if(localStream){localStream.getTracks().forEach(function(t){t.stop()});localStream=null}$('local-video').srcObject=null}
 function init(){
@@ -60,7 +105,7 @@ function init(){
  peer.on('error',function(e){if(e.type==='unavailable-id'){peer.destroy();setTimeout(init,500);return}peerState('error','Error de conexión');msg('PeerJS: '+(e.message||e.type),true);$('call-btn').disabled=false});
  peer.on('disconnected',function(){peerState('waiting','Reconectando…');try{peer.reconnect()}catch(e){}});
 }
-function enter(){ $('lobby').style.display='none';$('incoming').classList.remove('active');$('callview').classList.add('active');started=Date.now();clearInterval(timerId);tick();timerId=setInterval(tick,1000)}
+function enter(){$('lobby').style.display='none';$('incoming').classList.remove('active');$('callview').classList.add('active');started=Date.now();clearInterval(timerId);tick();timerId=setInterval(tick,1000)}
 function setup(c){
  currentCall=c;
  c.on('stream',function(s){$('remote-video').srcObject=s;$('no-remote').style.display='none';play($('remote-video'));enter()});
@@ -70,22 +115,53 @@ function setup(c){
  setTimeout(function(){if(currentCall===c)enter()},1800);
 }
 function answer(){
- var c=pendingCall;if(!c)return;pendingCall=null;$('incoming').classList.remove('active');msg('Solicitando acceso a cámara y micrófono…');
- media().then(function(s){setLocal(s);c.answer(s);setup(c);msg('')}).catch(function(e){$('device-status').textContent='Sin cámara local';$('device-hint').textContent=e.message;try{c.answer();setup(c);msg('Atendiste sin cámara local. '+e.message,true)}catch(x){msg('No se pudo atender: '+x.message,true);c.close()}});
+ var c=pendingCall;if(!c)return;pendingCall=null;$('incoming').classList.remove('active');
+ msg('Solicitando acceso a cámara…');
+ media().then(function(s){setLocal(s);c.answer(s);setup(c);msg('')}).catch(function(e){
+   $('device-status').textContent='Sin cámara local';
+   $('device-hint').textContent=e.message;
+   msg('Atendiendo sin cámara: '+e.message);
+   try{c.answer(null);setup(c)}catch(x){msg('No se pudo atender: '+x.message,true);c.close()}
+ });
 }
 function dial(){
- var id=$('remote-code-input').value.trim().toUpperCase();if(!id){msg('Ingresá el código.',true);return}if(id.length!==6){msg('El código debe tener 6 caracteres.',true);return}if(id===myCode){msg('Ese es tu propio código.',true);return}if(!peer||!peer.open){msg('Esperá a que se conecte el servidor.',true);return}
- $('call-btn').disabled=true;msg('Solicitando acceso a cámara y micrófono…');
- media().then(function(s){setLocal(s);msg('Llamando a '+id+'…');var c;try{c=peer.call(id,s)}catch(e){msg('No se pudo iniciar: '+e.message,true);stopLocal();$('call-btn').disabled=false;return}if(!c){msg('No se pudo iniciar la llamada. Revisá el código.',true);stopLocal();$('call-btn').disabled=false;return}setup(c)}).catch(function(e){msg(e.message,true);$('device-status').textContent='Cámara no disponible';$('device-hint').textContent=e.message;$('call-btn').disabled=false});
+ var id=$('remote-code-input').value.trim().toUpperCase();
+ if(!id){msg('Ingresá el código.',true);return}
+ if(id.length!==6){msg('El código debe tener 6 caracteres.',true);return}
+ if(id===myCode){msg('Ese es tu propio código.',true);return}
+ if(!peer||!peer.open){msg('Esperá a que se conecte el servidor.',true);return}
+ $('call-btn').disabled=true;msg('Solicitando acceso a cámara…');
+ media().then(function(s){
+   setLocal(s);msg('Llamando a '+id+'…');
+   var c;try{c=peer.call(id,s)}catch(e){msg('No se pudo iniciar: '+e.message,true);stopLocal();$('call-btn').disabled=false;return}
+   if(!c){msg('No se pudo iniciar la llamada. Revisá el código.',true);stopLocal();$('call-btn').disabled=false;return}
+   setup(c);
+ }).catch(function(e){
+   msg(e.message,true);
+   $('device-status').textContent='Cámara no disponible';
+   $('device-hint').textContent=e.message;
+   $('call-btn').disabled=false;
+ });
 }
 function finish(closeIt){
- clearInterval(timerId);var c=currentCall;currentCall=null;if(closeIt&&c){try{c.close()}catch(e){}}
- stopLocal();var rv=$('remote-video');if(rv.srcObject){try{rv.srcObject.getTracks().forEach(function(t){t.stop()})}catch(e){}}rv.srcObject=null;$('no-remote').style.display='flex';$('callview').classList.remove('active');$('incoming').classList.remove('active');$('lobby').style.display='flex';$('call-btn').disabled=false;started=0;$('call-timer').textContent='En llamada · 0:00';audioOn=true;videoOn=true;controls();msg('Llamada finalizada.');$('remote-code-input').focus()
+ clearInterval(timerId);var c=currentCall;currentCall=null;
+ if(closeIt&&c){try{c.close()}catch(e){}}
+ stopLocal();
+ var rv=$('remote-video');
+ if(rv.srcObject){try{rv.srcObject.getTracks().forEach(function(t){t.stop()})}catch(e){}}
+ rv.srcObject=null;$('no-remote').style.display='flex';
+ $('callview').classList.remove('active');$('incoming').classList.remove('active');
+ $('lobby').style.display='flex';$('call-btn').disabled=false;
+ started=0;$('call-timer').textContent='En llamada · 0:00';
+ audioOn=true;videoOn=true;controls();msg('Llamada finalizada.');$('remote-code-input').focus();
 }
 function tick(){if(!started)return;var s=Math.floor((Date.now()-started)/1000),m=Math.floor(s/60);$('call-timer').textContent='En llamada · '+m+':'+(s%60<10?'0':'')+(s%60)}
-function controls(){ $('btn-cam').classList.toggle('off',!videoOn);$('btn-mic').classList.toggle('off',!audioOn);$('btn-cam').textContent=videoOn?'📷':'🚫';$('btn-mic').textContent=audioOn?'🎙️':'🔇'}
-$('btn-answer').onclick=answer;$('btn-reject').onclick=function(){$('incoming').classList.remove('active');if(pendingCall){pendingCall.close();pendingCall=null}};
-$('call-btn').onclick=dial;$('remote-code-input').oninput=function(){this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')};$('remote-code-input').onkeydown=function(e){if(e.key==='Enter')dial()};
+function controls(){$('btn-cam').classList.toggle('off',!videoOn);$('btn-mic').classList.toggle('off',!audioOn);$('btn-cam').textContent=videoOn?'📷':'🚫';$('btn-mic').textContent=audioOn?'🎙️':'🔇'}
+$('btn-answer').onclick=answer;
+$('btn-reject').onclick=function(){$('incoming').classList.remove('active');if(pendingCall){pendingCall.close();pendingCall=null}};
+$('call-btn').onclick=dial;
+$('remote-code-input').oninput=function(){this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')};
+$('remote-code-input').onkeydown=function(e){if(e.key==='Enter')dial()};
 $('btn-end').onclick=function(){finish(true)};
 $('btn-cam').onclick=function(){if(!localStream)return;videoOn=!videoOn;localStream.getVideoTracks().forEach(function(t){t.enabled=videoOn});controls()};
 $('btn-mic').onclick=function(){if(!localStream)return;audioOn=!audioOn;localStream.getAudioTracks().forEach(function(t){t.enabled=audioOn});controls()};
@@ -95,7 +171,7 @@ document.addEventListener('keydown',function(e){
  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].indexOf(e.key)<0)return;
  var a=Array.prototype.slice.call(document.querySelectorAll('button:not(:disabled),input:not(:disabled)')).filter(function(x){return x.offsetParent!==null});
  var i=a.indexOf(document.activeElement);if(i<0){if(a.length)a[0].focus();return}
- i=(e.key==='ArrowLeft'||e.key==='ArrowUp')?(i-1+a.length)%a.length:(i+1)%a.length;a[i].focus();e.preventDefault()
+ i=(e.key==='ArrowLeft'||e.key==='ArrowUp')?(i-1+a.length)%a.length:(i+1)%a.length;a[i].focus();e.preventDefault();
 });
 window.addEventListener('beforeunload',function(){try{if(currentCall)currentCall.close();if(peer)peer.destroy()}catch(e){}stopLocal()});
 init();
