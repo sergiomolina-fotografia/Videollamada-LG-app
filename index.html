@@ -1,466 +1,103 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>LG Video Call</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap">
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090d18"><title>LG Video Call</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js"></script>
 <style>
-:root {
-  --bg: #0a0a0f;
-  --surface: #13131a;
-  --border: #2a2a3a;
-  --fg: #e8e8f0;
-  --muted: #7070a0;
-  --accent: #4f8eff;
-  --danger: #ff4f6a;
-  --ok: #4fff9a;
-  --sz: 1;
-  color-scheme: dark;
-}
-/* TV: pantalla grande → escala todo */
-@media (min-width: 1200px) {
-  :root { --sz: 1.6; }
-  html { font-size: calc(16px * 1.6); }
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body {
-  height: 100%; background: var(--bg); color: var(--fg);
-  font-family: 'Space Grotesk', system-ui, sans-serif;
-  overflow: hidden;
-}
-#lobby {
-  height: 100%; display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 32px max(16px, env(safe-area-inset-left,0px));
-  padding-right: max(16px, env(safe-area-inset-right,0px));
-}
-.logo {
-  font-size: clamp(1rem,2.5vw,1.4rem); font-weight:700;
-  letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:40px;
-}
-.logo span { color:var(--accent); }
-.card {
-  background:var(--surface); border:1px solid var(--border);
-  border-radius:20px; padding:36px 40px; width:100%; max-width:560px;
-  display:flex; flex-direction:column; gap:24px;
-}
-.card-title { font-size:1.1rem; font-weight:700; }
-.code-display {
-  background:var(--bg); border:1px solid var(--border);
-  border-radius:12px; padding:20px 24px;
-}
-.code-value {
-  font-size:clamp(2rem,5vw,3rem); font-weight:700;
-  letter-spacing:.18em; color:var(--accent); font-variant-numeric:tabular-nums;
-}
-.code-hint { font-size:.78rem; color:var(--muted); margin-top:4px; }
-.status-pill {
-  display:inline-flex; align-items:center; gap:8px;
-  font-size:.85rem; color:var(--muted); padding:6px 12px;
-  border-radius:999px; background:var(--bg); border:1px solid var(--border); width:fit-content;
-}
-.status-dot {
-  width:8px; height:8px; border-radius:50%; background:var(--muted); flex-shrink:0; transition:background .3s;
-}
-.status-dot.ready { background:var(--ok); box-shadow:0 0 6px var(--ok); }
-.status-dot.waiting { background:var(--accent); box-shadow:0 0 6px var(--accent); animation:pulse 1.4s ease-in-out infinite; }
-.status-dot.error { background:var(--danger); }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-.divider {
-  display:flex; align-items:center; gap:12px;
-  color:var(--muted); font-size:.8rem; letter-spacing:.06em;
-}
-.divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
-.input-group { display:flex; gap:10px; }
-input[type="text"] {
-  flex:1; background:var(--bg); border:1px solid var(--border);
-  border-radius:10px; padding:14px 16px; color:var(--fg);
-  font-family:inherit; font-size:1.1rem; letter-spacing:.1em; outline:none; transition:border-color .2s;
-}
-input::placeholder { color:var(--muted); }
-input:focus { border-color:var(--accent); }
-.btn {
-  background:var(--accent); color:#fff; border:none; border-radius:10px;
-  padding:14px 26px; font-family:inherit; font-size:1rem; font-weight:700;
-  cursor:pointer; letter-spacing:.04em; transition:opacity .15s, transform .1s; white-space:nowrap;
-}
-.btn:hover { opacity:.88; }
-.btn:active { transform:scale(.97); }
-.btn:disabled { opacity:.4; cursor:not-allowed; }
-.btn.danger { background:var(--danger); }
-
-/* INCOMING CALL OVERLAY */
-#incoming {
-  display:none; position:fixed; inset:0; z-index:100;
-  background:rgba(0,0,0,.85); backdrop-filter:blur(8px);
-  align-items:center; justify-content:center; flex-direction:column; gap:28px;
-}
-#incoming.active { display:flex; }
-.incoming-icon { font-size:5rem; animation:ring .6s ease-in-out infinite alternate; }
-@keyframes ring { from{transform:rotate(-15deg)} to{transform:rotate(15deg)} }
-.incoming-title { font-size:1.6rem; font-weight:700; color:#fff; }
-.incoming-hint { font-size:1rem; color:var(--muted); }
-.incoming-btns { display:flex; gap:20px; }
-.incoming-btns .btn { padding:18px 40px; font-size:1.1rem; border-radius:14px; }
-
-/* CALL VIEW */
-#callview { height:100%; position:relative; background:#000; display:none; }
-#callview.active { display:block; }
-#remote-video { width:100%; height:100%; object-fit:cover; display:block; background:#000; }
-#local-video {
-  position:absolute;
-  bottom:max(90px, calc(env(safe-area-inset-bottom,0px) + 80px));
-  right:max(16px, env(safe-area-inset-right,0px));
-  width:clamp(120px,18vw,220px); aspect-ratio:4/3;
-  object-fit:cover; border-radius:12px;
-  border:2px solid rgba(255,255,255,.25); background:#111; cursor:pointer;
-}
-.call-overlay {
-  position:absolute; inset:0; display:flex; flex-direction:column;
-  align-items:center; justify-content:flex-end; pointer-events:none;
-  padding-bottom:max(28px, env(safe-area-inset-bottom,0px));
-}
-.call-controls {
-  display:flex; gap:16px; align-items:center; pointer-events:all;
-  background:rgba(10,10,15,.8); backdrop-filter:blur(16px);
-  border:1px solid rgba(255,255,255,.1); border-radius:999px; padding:14px 24px;
-}
-.ctrl-btn {
-  width:60px; height:60px; border-radius:50%; border:none;
-  display:flex; align-items:center; justify-content:center;
-  font-size:1.5rem; cursor:pointer; transition:transform .1s, opacity .15s;
-  background:rgba(255,255,255,.12); color:#fff;
-}
-.ctrl-btn:hover { opacity:.85; }
-.ctrl-btn:active { transform:scale(.93); }
-.ctrl-btn.muted { background:rgba(255,79,106,.35); color:var(--danger); }
-.ctrl-btn.end { background:var(--danger); width:68px; height:68px; font-size:1.7rem; }
-.call-info {
-  position:absolute; top:max(16px, env(safe-area-inset-top,0px));
-  left:max(16px, env(safe-area-inset-left,0px));
-  pointer-events:none; display:flex; align-items:center; gap:8px;
-  background:rgba(10,10,15,.7); backdrop-filter:blur(10px);
-  border-radius:999px; padding:8px 16px; font-size:.9rem; color:rgba(255,255,255,.8);
-}
-.rec-dot {
-  width:8px; height:8px; border-radius:50%;
-  background:var(--ok); box-shadow:0 0 5px var(--ok); animation:pulse 2s ease-in-out infinite;
-}
-#no-remote {
-  position:absolute; inset:0; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; gap:14px;
-  color:var(--muted); font-size:1rem; pointer-events:none;
-}
-#no-remote .big-icon { font-size:3.5rem; opacity:.3; }
-#lobby-status { font-size:.9rem; color:var(--muted); min-height:1.4em; }
-</style>
-</head>
-<body>
-
-<!-- LOBBY -->
-<div id="lobby">
-  <div class="logo"><span>■</span> Video Call</div>
-  <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-      <div class="card-title">Tu código de sala</div>
-      <div class="status-pill">
-        <div class="status-dot" id="peer-dot"></div>
-        <span id="peer-status">Conectando…</span>
-      </div>
-    </div>
-    <div class="code-display">
-      <div class="code-value" id="my-code">——</div>
-      <div class="code-hint">compartí este código con quien quieras llamar</div>
-    </div>
-    <div class="divider">o ingresá el código del otro</div>
-    <div class="input-group">
-      <input type="text" id="remote-code-input" placeholder="CÓDIGO" maxlength="6" autocomplete="off" spellcheck="false">
-      <button class="btn" id="call-btn" disabled>Llamar</button>
-    </div>
-    <div id="lobby-status"></div>
-  </div>
-</div>
-
-<!-- INCOMING CALL -->
-<div id="incoming">
-  <div class="incoming-icon">📞</div>
-  <div class="incoming-title">Llamada entrante</div>
-  <div class="incoming-hint" id="incoming-from">alguien quiere conectarse</div>
-  <div class="incoming-btns">
-    <button class="btn danger" id="btn-reject">Rechazar</button>
-    <button class="btn" id="btn-answer">Atender 📹</button>
-  </div>
-</div>
-
-<!-- CALL VIEW -->
-<div id="callview">
-  <video id="remote-video" autoplay playsinline></video>
-  <div id="no-remote">
-    <div class="big-icon">📷</div>
-    <div>Esperando video del otro…</div>
-  </div>
-  <video id="local-video" autoplay playsinline muted></video>
-  <div class="call-info">
-    <div class="rec-dot"></div>
-    <span id="call-timer">0:00</span>
-  </div>
-  <div class="call-overlay">
-    <div class="call-controls">
-      <button class="ctrl-btn" id="btn-cam">📷</button>
-      <button class="ctrl-btn" id="btn-mic">🎙️</button>
-      <button class="ctrl-btn end" id="btn-end">📵</button>
-      <button class="ctrl-btn" id="btn-swap">🔄</button>
-      <button class="ctrl-btn" id="btn-fs">⛶</button>
-    </div>
-  </div>
-</div>
-
+:root{color-scheme:dark;--bg:#090d18;--panel:#121c2e;--panel2:#0d1524;--line:#2a3852;--fg:#f2f6ff;--muted:#9aa9c2;--blue:#347cf6;--blue2:#65a1ff;--red:#ed5268;--green:#43d99a;font-family:Arial,Helvetica,sans-serif}
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;background:var(--bg);color:var(--fg);overflow:hidden}button,input{font:inherit}button{cursor:pointer}button:focus,input:focus{outline:3px solid #8bb7ff;outline-offset:3px}
+#lobby{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:25px 20px;overflow:auto}
+.top{width:min(100%,1050px);display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}.brand{font-weight:800;letter-spacing:.1em;font-size:1.15rem}.mark{display:inline-grid;place-items:center;background:var(--blue);border-radius:11px;width:40px;height:40px;margin-right:10px}
+.connection{display:flex;align-items:center;border:1px solid var(--line);border-radius:30px;padding:10px 15px;color:var(--muted);background:#111b2b}.dot{width:9px;height:9px;border-radius:50%;background:#77849a;margin-right:9px}.dot.ready{background:var(--green);box-shadow:0 0 8px var(--green)}.dot.waiting{background:var(--blue2);animation:pulse 1.2s infinite}.dot.error{background:var(--red)}@keyframes pulse{50%{opacity:.35}}
+.hero{text-align:center;margin-bottom:28px}.hero h1{font-size:clamp(1.7rem,3vw,2.7rem);margin:0 0 8px}.hero p{margin:0;color:var(--muted)}
+.card{width:min(100%,900px);padding:clamp(20px,3vw,34px);border:1px solid var(--line);border-radius:24px;background:linear-gradient(145deg,#152139,#101827);box-shadow:0 22px 70px #0005}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{background:var(--panel2);border:1px solid var(--line);border-radius:17px;padding:22px;min-width:0}.label{font-size:.8rem;color:var(--muted);font-weight:bold;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}.code{font-size:clamp(2rem,5vw,3.4rem);font-weight:800;letter-spacing:.16em;color:var(--blue2);white-space:nowrap}.hint{font-size:.9rem;color:var(--muted);line-height:1.45;margin-top:9px}.state{font-size:1.15rem;font-weight:bold;color:var(--green)}
+.form{display:flex;margin-top:12px}input{min-width:0;flex:1;background:#080e19;border:1px solid #34435e;border-radius:11px 0 0 11px;padding:15px;color:white;font-size:1.1rem;letter-spacing:.12em;text-transform:uppercase}.btn{border:0;border-radius:11px;background:var(--blue);color:white;font-weight:bold;padding:14px 24px}.btn:disabled{opacity:.4;cursor:not-allowed}.form .btn{border-radius:0 11px 11px 0}.danger{background:var(--red)}#lobby-status{min-height:24px;margin-top:16px;color:#c5d4eb;font-size:.92rem;line-height:1.4}#lobby-status.error{color:#ff8798}
+#incoming{display:none;position:fixed;inset:0;z-index:20;background:#050911f5;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px}#incoming.active{display:flex}.incoming-icon{font-size:clamp(3.5rem,8vw,6rem);margin-bottom:18px}#incoming h2{font-size:clamp(1.8rem,4vw,3rem);margin:0 0 12px}#incoming-from{color:var(--muted);font-size:1.1rem;margin-bottom:28px}.actions{display:flex;flex-wrap:wrap;justify-content:center}.actions button{min-width:180px;margin:8px;padding:18px 25px;font-size:1.1rem}
+#callview{display:none;position:fixed;inset:0;background:#000;z-index:10}#callview.active{display:block}#remote-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+#no-remote{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;background:radial-gradient(ellipse,#18243a,#090d18 70%)}#no-remote .camicon{font-size:4rem;margin-bottom:14px}#no-remote p{color:var(--muted)}
+#local-video{position:absolute;right:28px;top:28px;width:clamp(150px,20vw,290px);aspect-ratio:4/3;object-fit:cover;border:3px solid #ffffffbb;border-radius:16px;background:#111;z-index:2}
+.calltop{position:absolute;top:28px;left:28px;z-index:3;background:#101827dd;border:1px solid #ffffff25;border-radius:30px;padding:12px 18px;display:flex;align-items:center}.callbottom{position:absolute;bottom:28px;left:0;right:0;display:flex;justify-content:center;z-index:4}.controls{display:flex;align-items:center;background:#101827ef;border:1px solid #ffffff24;border-radius:22px;padding:14px}.ctrl{width:70px;height:70px;border:0;border-radius:16px;background:#293750;color:white;font-size:1.6rem;margin:0 8px}.ctrl.off{background:#59303b}.ctrl.end{background:var(--red);width:82px}.callmsg{position:absolute;top:90px;left:50%;transform:translateX(-50%);z-index:5;background:#111b2b;padding:10px 16px;border-radius:10px;max-width:80%;text-align:center}.hidden{display:none!important}
+@media(min-width:1200px){#lobby{padding:35px 5vw}.brand{font-size:1.45rem}.mark{width:48px;height:48px}.card{width:min(88vw,1120px);padding:38px}.panel{padding:30px}.label{font-size:.95rem}.hint{font-size:1rem}.btn{font-size:1.1rem;padding:17px 30px}input{font-size:1.35rem;padding:18px}.connection{font-size:1rem;padding:12px 18px}.ctrl{width:78px;height:78px;font-size:1.8rem}.ctrl.end{width:90px}}
+@media(max-width:700px){#lobby{justify-content:flex-start;padding-top:20px}.grid{grid-template-columns:1fr}.hero{margin-bottom:20px}.panel{padding:18px}#local-video{width:112px;right:12px;top:12px}.calltop{left:12px;top:12px;padding:9px 13px}.callbottom{bottom:12px}.controls{padding:8px}.ctrl{width:49px;height:49px;font-size:1.2rem;margin:0 3px}.ctrl.end{width:56px}}
+</style></head><body>
+<main id="lobby">
+<header class="top"><div class="brand"><span class="mark">▶</span>LG VIDEO CALL</div><div class="connection"><span class="dot waiting" id="peer-dot"></span><span id="peer-status">Conectando…</span></div></header>
+<section class="hero"><h1>Videollamadas privadas</h1><p>Conectate desde tu televisor o celular</p></section>
+<section class="card"><div class="grid">
+<div class="panel"><div class="label">Tu código de sala</div><div class="code" id="my-code">------</div><div class="hint">Compartí este código con quien quieras llamar.</div></div>
+<div class="panel"><div class="label">Estado del dispositivo</div><div class="state" id="device-status">Preparando conexión…</div><div class="hint" id="device-hint">La cámara y el micrófono se solicitarán al iniciar o atender una llamada.</div></div></div>
+<div class="panel" style="margin-top:18px"><div class="label">Llamar a otro dispositivo</div><div class="form"><input id="remote-code-input" maxlength="6" placeholder="INGRESÁ EL CÓDIGO" autocomplete="off" aria-label="Código de la otra persona"><button class="btn" id="call-btn" disabled>Llamar</button></div><div id="lobby-status" role="status" aria-live="polite"></div></div></section></main>
+<section id="incoming" role="dialog" aria-modal="true"><div class="incoming-icon">📞</div><h2>Llamada entrante</h2><div id="incoming-from">Alguien quiere conectarse</div><div class="actions"><button class="btn danger" id="btn-reject">Rechazar</button><button class="btn" id="btn-answer">Atender llamada</button></div></section>
+<section id="callview"><video id="remote-video" autoplay playsinline></video><div id="no-remote"><div class="camicon">📹</div><strong>Conectando video…</strong><p>Esperando la imagen del otro dispositivo</p></div><video id="local-video" autoplay playsinline muted></video><div class="calltop"><span class="dot ready"></span><span id="call-timer">En llamada · 0:00</span></div><div id="call-message" class="callmsg hidden"></div><div class="callbottom"><div class="controls"><button class="ctrl" id="btn-cam" aria-label="Cámara">📷</button><button class="ctrl" id="btn-mic" aria-label="Micrófono">🎙️</button><button class="ctrl end" id="btn-end" aria-label="Finalizar llamada">📵</button><button class="ctrl" id="btn-fs" aria-label="Pantalla completa">⛶</button></div></div></section>
 <script>
 (function(){
-  var peer=null, localStream=null, currentCall=null, pendingCall=null, myCode=null;
-  var callStart=null, timerInterval=null, audioEnabled=true, videoEnabled=true;
-
-  var lobby     = document.getElementById('lobby');
-  var incomingEl= document.getElementById('incoming');
-  var callview  = document.getElementById('callview');
-  var peerDot   = document.getElementById('peer-dot');
-  var peerStatus= document.getElementById('peer-status');
-  var myCodeEl  = document.getElementById('my-code');
-  var inputEl   = document.getElementById('remote-code-input');
-  var callBtn   = document.getElementById('call-btn');
-  var lobbyMsg  = document.getElementById('lobby-status');
-  var remoteVid = document.getElementById('remote-video');
-  var localVid  = document.getElementById('local-video');
-  var noRemote  = document.getElementById('no-remote');
-  var timerEl   = document.getElementById('call-timer');
-  var incomingFrom = document.getElementById('incoming-from');
-
-  /* ── helpers ── */
-  function genCode(){
-    var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s='';
-    for(var i=0;i<6;i++) s+=c[Math.floor(Math.random()*c.length)];
-    return s;
-  }
-
-  function forcePlay(vid){
-    if(!vid.srcObject) return;
-    vid.play().catch(function(){
-      // webOS: intentar de nuevo tras interacción
-      document.addEventListener('click', function once(){
-        vid.play().catch(function(){});
-        document.removeEventListener('click', once);
-      }, {once:true});
-    });
-  }
-
-  function getMedia(withAudio, cb){
-    var constraints = { video: { width:{ideal:1280}, height:{ideal:720} }, audio: withAudio };
-    navigator.mediaDevices.getUserMedia(constraints)
-      .then(function(s){ cb(null,s); })
-      .catch(function(){
-        // fallback: solo video sin resolución ideal
-        navigator.mediaDevices.getUserMedia({ video:true, audio:false })
-          .then(function(s){ cb(null,s); })
-          .catch(function(e){ cb(e); });
-      });
-  }
-
-  /* ── PeerJS init ── */
-  function initPeer(){
-    myCode = genCode();
-    myCodeEl.textContent = myCode;
-    peer = new Peer(myCode, {
-      host:'0.peerjs.com', port:443, path:'/', secure:true, debug:0,
-      config:{ iceServers:[
-        {urls:'stun:stun.l.google.com:19302'},
-        {urls:'stun:stun1.l.google.com:19302'},
-        {urls:'stun:stun.cloudflare.com:3478'}
-      ]}
-    });
-    peer.on('open', function(){
-      peerDot.className='status-dot ready';
-      peerStatus.textContent='Listo';
-      callBtn.disabled=false;
-    });
-    peer.on('error', function(err){
-      if(err.type==='unavailable-id'){ peer.destroy(); initPeer(); return; }
-      peerDot.className='status-dot error';
-      peerStatus.textContent='Error';
-      lobbyMsg.textContent='Error: '+(err.message||err.type);
-    });
-    peer.on('disconnected', function(){
-      peerDot.className='status-dot waiting';
-      peerStatus.textContent='Reconectando…';
-      try{ peer.reconnect(); }catch(e){}
-    });
-    peer.on('call', function(call){
-      // guardar llamada entrante y mostrar pantalla de atender
-      pendingCall = call;
-      incomingFrom.textContent = 'Código: ' + call.peer;
-      incomingEl.classList.add('active');
-    });
-  }
-
-  /* ── Atender / Rechazar ── */
-  document.getElementById('btn-answer').addEventListener('click', function(){
-    incomingEl.classList.remove('active');
-    if(!pendingCall) return;
-    var call = pendingCall; pendingCall = null;
-    lobbyMsg.textContent = 'Abriendo cámara…';
-    getMedia(true, function(err, stream){
-      if(err){
-        // TV sin cámara: atender sin video local igual
-        stream = null;
-      }
-      localStream = stream;
-      if(stream){ localVid.srcObject=stream; forcePlay(localVid); }
-      call.answer(stream || createEmptyStream());
-      setupCall(call);
-    });
-  });
-
-  document.getElementById('btn-reject').addEventListener('click', function(){
-    incomingEl.classList.remove('active');
-    if(pendingCall){ try{ pendingCall.close(); }catch(e){} pendingCall=null; }
-  });
-
-  /* ── Llamar ── */
-  callBtn.addEventListener('click', function(){
-    var code = inputEl.value.trim().toUpperCase();
-    if(!code){ lobbyMsg.textContent='Ingresá el código.'; return; }
-    if(code===myCode){ lobbyMsg.textContent='Ese es tu propio código.'; return; }
-    lobbyMsg.textContent='Abriendo cámara…'; callBtn.disabled=true;
-    getMedia(true, function(err, stream){
-      if(err){
-        // sin cámara: llamar igual sin video local
-        stream = null;
-        lobbyMsg.textContent='Sin cámara local. Llamando a '+code+'…';
-      } else {
-        lobbyMsg.textContent='Llamando a '+code+'…';
-      }
-      localStream = stream;
-      if(stream){ localVid.srcObject=stream; forcePlay(localVid); }
-      var call = peer.call(code, stream || createEmptyStream());
-      if(!call){ lobbyMsg.textContent='No se pudo conectar. Verificá el código.'; callBtn.disabled=false; return; }
-      setupCall(call);
-    });
-  });
-
-  /* stream vacío para browsers que no tienen cámara */
-  function createEmptyStream(){
-    try{
-      var ctx = new AudioContext();
-      var dest = ctx.createMediaStreamDestination();
-      return dest.stream;
-    }catch(e){ return null; }
-  }
-
-  inputEl.addEventListener('input', function(){ inputEl.value=inputEl.value.toUpperCase(); });
-  inputEl.addEventListener('keydown', function(e){ if(e.key==='Enter') callBtn.click(); });
-
-  /* ── Setup llamada activa ── */
-  function setupCall(call){
-    currentCall = call;
-    call.on('stream', function(remoteStream){
-      remoteVid.srcObject = remoteStream;
-      noRemote.style.display = 'none';
-      forcePlay(remoteVid);
-      enterCallView();
-    });
-    call.on('close', function(){ hangup(); });
-    call.on('error', function(){ hangup(); });
-    // si a los 2s no llegó stream, igual mostrar la pantalla
-    setTimeout(function(){ if(currentCall) enterCallView(); }, 2000);
-  }
-
-  function enterCallView(){
-    lobby.style.display='none';
-    callview.classList.add('active');
-    callStart=Date.now();
-    clearInterval(timerInterval);
-    timerInterval=setInterval(updateTimer, 1000);
-  }
-
-  function hangup(){
-    clearInterval(timerInterval);
-    if(currentCall){ try{currentCall.close();}catch(e){} currentCall=null; }
-    if(localStream){ localStream.getTracks().forEach(function(t){t.stop();}); localStream=null; }
-    remoteVid.srcObject=null; localVid.srcObject=null;
-    noRemote.style.display='';
-    callview.classList.remove('active');
-    lobby.style.display='';
-    callBtn.disabled=false;
-    lobbyMsg.textContent='Llamada finalizada.';
-    audioEnabled=true; videoEnabled=true; updateCtrlBtns();
-    try{ if(document.exitFullscreen) document.exitFullscreen(); }catch(e){}
-  }
-
-  function updateTimer(){
-    if(!callStart) return;
-    var s=Math.floor((Date.now()-callStart)/1000), m=Math.floor(s/60); s=s%60;
-    timerEl.textContent=m+':'+(s<10?'0':'')+s;
-  }
-
-  /* ── Controles en llamada ── */
-  document.getElementById('btn-end').addEventListener('click', hangup);
-
-  document.getElementById('btn-cam').addEventListener('click', function(){
-    if(!localStream) return;
-    videoEnabled=!videoEnabled;
-    localStream.getVideoTracks().forEach(function(t){t.enabled=videoEnabled;});
-    updateCtrlBtns();
-  });
-
-  document.getElementById('btn-mic').addEventListener('click', function(){
-    if(!localStream) return;
-    audioEnabled=!audioEnabled;
-    localStream.getAudioTracks().forEach(function(t){t.enabled=audioEnabled;});
-    updateCtrlBtns();
-  });
-
-  function updateCtrlBtns(){
-    var cb=document.getElementById('btn-cam'), mb=document.getElementById('btn-mic');
-    cb.classList.toggle('muted',!videoEnabled); cb.textContent=videoEnabled?'📷':'🚫';
-    mb.classList.toggle('muted',!audioEnabled); mb.textContent=audioEnabled?'🎙️':'🔇';
-  }
-
-  localVid.addEventListener('click', function(){
-    // swap esquina PiP
-    var r=localVid.style.right, l=localVid.style.left;
-    if(!l || l==='auto' || l===''){
-      localVid.style.right='auto'; localVid.style.left='max(16px, env(safe-area-inset-left,0px))';
-    } else {
-      localVid.style.left='auto'; localVid.style.right='max(16px, env(safe-area-inset-right,0px))';
-    }
-  });
-
-  document.getElementById('btn-fs').addEventListener('click', function(){
-    var el=document.documentElement;
-    if(!document.fullscreenElement){
-      if(el.requestFullscreen) el.requestFullscreen();
-      else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    } else { if(document.exitFullscreen) document.exitFullscreen(); }
-  });
-
-  var facingMode='user';
-  document.getElementById('btn-swap').addEventListener('click', function(){
-    if(!localStream||!currentCall) return;
-    facingMode = facingMode==='user' ? 'environment' : 'user';
-    navigator.mediaDevices.getUserMedia({video:{facingMode:facingMode}, audio:audioEnabled})
-      .then(function(newStream){
-        var vt=newStream.getVideoTracks()[0];
-        var pc=currentCall.peerConnection;
-        var sender=pc&&pc.getSenders ? pc.getSenders().find(function(s){return s.track&&s.track.kind==='video';}) : null;
-        if(sender) sender.replaceTrack(vt);
-        localStream.getVideoTracks().forEach(function(t){t.stop();});
-        localVid.srcObject=newStream; localStream=newStream; forcePlay(localVid);
-      }).catch(function(){});
-  });
-
-  initPeer();
+'use strict';
+var peer=null,localStream=null,currentCall=null,pendingCall=null,myCode=null,started=0,timerId=null,audioOn=true,videoOn=true;
+var $=function(id){return document.getElementById(id)};
+function msg(t,err){$('lobby-status').textContent=t||'';$('lobby-status').className=err?'error':''}
+function code(){var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';for(var i=0;i<6;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
+function peerState(c,t){$('peer-dot').className='dot '+c;$('peer-status').textContent=t}
+function callMsg(t){$('call-message').textContent=t;$('call-message').classList.remove('hidden');setTimeout(function(){$('call-message').classList.add('hidden')},4500)}
+function play(v){if(!v.srcObject)return;var p=v.play();if(p&&p.catch)p.catch(function(){callMsg('Presioná OK o ENTER para reproducir el video.')})}
+function media(){
+ return new Promise(function(resolve,reject){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){reject(new Error('Este navegador no permite acceder a cámara y micrófono (getUserMedia).'));return}
+  var done=false,timeout=setTimeout(function(){if(!done){done=true;reject(new Error('La cámara tardó demasiado. Revisá el USB y los permisos del televisor.'))}},15000);
+  navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720}},audio:true}).then(function(s){if(done){s.getTracks().forEach(function(t){t.stop()});return}done=true;clearTimeout(timeout);resolve(s)}).catch(function(first){
+   navigator.mediaDevices.getUserMedia({video:true,audio:false}).then(function(s){if(done){s.getTracks().forEach(function(t){t.stop()});return}done=true;clearTimeout(timeout);callMsg('Cámara disponible, pero no se activó el micrófono.');resolve(s)}).catch(function(second){if(done)return;done=true;clearTimeout(timeout);reject(new Error('No se pudo abrir la cámara: '+(second.message||first.message||'verificá permisos y conexión USB.')))})
+  })
+ })
+}
+function setLocal(s){localStream=s;$('local-video').srcObject=s;play($('local-video'));audioOn=s.getAudioTracks().length>0;videoOn=s.getVideoTracks().length>0;controls()}
+function stopLocal(){if(localStream){localStream.getTracks().forEach(function(t){t.stop()});localStream=null}$('local-video').srcObject=null}
+function init(){
+ if(typeof Peer==='undefined'){peerState('error','Error de biblioteca');msg('No se pudo cargar PeerJS. Revisá Internet.',true);return}
+ myCode=code();$('my-code').textContent=myCode;
+ peer=new Peer(myCode,{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:1,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'}]}});
+ peer.on('open',function(){peerState('ready','Conectado');$('call-btn').disabled=false;$('device-status').textContent='Listo para llamar';msg('Compartí tu código o ingresá el de otro dispositivo.')});
+ peer.on('call',function(c){if(currentCall){c.close();return}pendingCall=c;$('incoming-from').textContent='Código del contacto: '+c.peer;$('incoming').classList.add('active');$('btn-answer').focus()});
+ peer.on('error',function(e){if(e.type==='unavailable-id'){peer.destroy();setTimeout(init,500);return}peerState('error','Error de conexión');msg('PeerJS: '+(e.message||e.type),true);$('call-btn').disabled=false});
+ peer.on('disconnected',function(){peerState('waiting','Reconectando…');try{peer.reconnect()}catch(e){}});
+}
+function enter(){ $('lobby').style.display='none';$('incoming').classList.remove('active');$('callview').classList.add('active');started=Date.now();clearInterval(timerId);tick();timerId=setInterval(tick,1000)}
+function setup(c){
+ currentCall=c;
+ c.on('stream',function(s){$('remote-video').srcObject=s;$('no-remote').style.display='none';play($('remote-video'));enter()});
+ c.on('close',function(){finish(false)});
+ c.on('error',function(e){callMsg('Error de llamada: '+(e.message||'conexión interrumpida'));finish(false)});
+ c.on('iceStateChanged',function(s){if(s==='failed')callMsg('No se pudo establecer conexión entre las redes.');if(s==='disconnected')callMsg('Conexión interrumpida; intentando recuperar…')});
+ setTimeout(function(){if(currentCall===c)enter()},1800);
+}
+function answer(){
+ var c=pendingCall;if(!c)return;pendingCall=null;$('incoming').classList.remove('active');msg('Solicitando acceso a cámara y micrófono…');
+ media().then(function(s){setLocal(s);c.answer(s);setup(c);msg('')}).catch(function(e){$('device-status').textContent='Sin cámara local';$('device-hint').textContent=e.message;try{c.answer();setup(c);msg('Atendiste sin cámara local. '+e.message,true)}catch(x){msg('No se pudo atender: '+x.message,true);c.close()}});
+}
+function dial(){
+ var id=$('remote-code-input').value.trim().toUpperCase();if(!id){msg('Ingresá el código.',true);return}if(id.length!==6){msg('El código debe tener 6 caracteres.',true);return}if(id===myCode){msg('Ese es tu propio código.',true);return}if(!peer||!peer.open){msg('Esperá a que se conecte el servidor.',true);return}
+ $('call-btn').disabled=true;msg('Solicitando acceso a cámara y micrófono…');
+ media().then(function(s){setLocal(s);msg('Llamando a '+id+'…');var c;try{c=peer.call(id,s)}catch(e){msg('No se pudo iniciar: '+e.message,true);stopLocal();$('call-btn').disabled=false;return}if(!c){msg('No se pudo iniciar la llamada. Revisá el código.',true);stopLocal();$('call-btn').disabled=false;return}setup(c)}).catch(function(e){msg(e.message,true);$('device-status').textContent='Cámara no disponible';$('device-hint').textContent=e.message;$('call-btn').disabled=false});
+}
+function finish(closeIt){
+ clearInterval(timerId);var c=currentCall;currentCall=null;if(closeIt&&c){try{c.close()}catch(e){}}
+ stopLocal();var rv=$('remote-video');if(rv.srcObject){try{rv.srcObject.getTracks().forEach(function(t){t.stop()})}catch(e){}}rv.srcObject=null;$('no-remote').style.display='flex';$('callview').classList.remove('active');$('incoming').classList.remove('active');$('lobby').style.display='flex';$('call-btn').disabled=false;started=0;$('call-timer').textContent='En llamada · 0:00';audioOn=true;videoOn=true;controls();msg('Llamada finalizada.');$('remote-code-input').focus()
+}
+function tick(){if(!started)return;var s=Math.floor((Date.now()-started)/1000),m=Math.floor(s/60);$('call-timer').textContent='En llamada · '+m+':'+(s%60<10?'0':'')+(s%60)}
+function controls(){ $('btn-cam').classList.toggle('off',!videoOn);$('btn-mic').classList.toggle('off',!audioOn);$('btn-cam').textContent=videoOn?'📷':'🚫';$('btn-mic').textContent=audioOn?'🎙️':'🔇'}
+$('btn-answer').onclick=answer;$('btn-reject').onclick=function(){$('incoming').classList.remove('active');if(pendingCall){pendingCall.close();pendingCall=null}};
+$('call-btn').onclick=dial;$('remote-code-input').oninput=function(){this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')};$('remote-code-input').onkeydown=function(e){if(e.key==='Enter')dial()};
+$('btn-end').onclick=function(){finish(true)};
+$('btn-cam').onclick=function(){if(!localStream)return;videoOn=!videoOn;localStream.getVideoTracks().forEach(function(t){t.enabled=videoOn});controls()};
+$('btn-mic').onclick=function(){if(!localStream)return;audioOn=!audioOn;localStream.getAudioTracks().forEach(function(t){t.enabled=audioOn});controls()};
+$('btn-fs').onclick=function(){var el=document.documentElement;if(!document.fullscreenElement){if(el.requestFullscreen)el.requestFullscreen().catch(function(){});else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen()}else if(document.exitFullscreen)document.exitFullscreen()};
+document.addEventListener('keydown',function(e){
+ if(e.key==='Escape'&&$('callview').classList.contains('active')){finish(true);return}
+ if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].indexOf(e.key)<0)return;
+ var a=Array.prototype.slice.call(document.querySelectorAll('button:not(:disabled),input:not(:disabled)')).filter(function(x){return x.offsetParent!==null});
+ var i=a.indexOf(document.activeElement);if(i<0){if(a.length)a[0].focus();return}
+ i=(e.key==='ArrowLeft'||e.key==='ArrowUp')?(i-1+a.length)%a.length:(i+1)%a.length;a[i].focus();e.preventDefault()
+});
+window.addEventListener('beforeunload',function(){try{if(currentCall)currentCall.close();if(peer)peer.destroy()}catch(e){}stopLocal()});
+init();
 })();
-</script>
-</body>
-</html>
+</script></body></html>
