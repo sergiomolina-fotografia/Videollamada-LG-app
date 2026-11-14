@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diagnóstico de cámara y micrófono - LG</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;padding:18px;background:#101827;color:#f3f6fb;font:16px Arial,sans-serif}
+main{max-width:760px;margin:auto}
+h1{font-size:23px;margin:0 0 8px}
+p{color:#b9c5d6;line-height:1.45}
+.buttons{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0}
+button{border:0;border-radius:9px;padding:13px 16px;background:#2563eb;color:white;font-weight:bold;font-size:15px}
+button.secondary{background:#475569}
+video{display:block;width:100%;max-height:390px;background:#05080d;border-radius:12px;margin:12px 0;object-fit:contain}
+#status{padding:12px;border:1px solid #334155;border-radius:9px;background:#172235;margin:12px 0}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#050b14;border:1px solid #263449;border-radius:9px;padding:12px;min-height:180px;font:13px/1.45 monospace}
+small{color:#9fb0c5}
+</style>
+</head>
+<body>
+<main>
+<h1>Diagnóstico de cámara y micrófono</h1>
+<p>Prueba directa desde el navegador del televisor. Ejecutá cada prueba con su botón. No hace falta instalar nada.</p>
+<div class="buttons">
+<button id="cam">Probar cámara</button>
+<button id="mic">Probar micrófono</button>
+<button id="both">Probar ambos</button>
+<button id="devices" class="secondary">Ver dispositivos</button>
+<button id="stop" class="secondary">Detener</button>
+</div>
+<div id="status">Estado: esperando una prueba.</div>
+<video id="preview" autoplay playsinline muted></video>
+<p><small>El video aparece silenciado en esta página para evitar acoples. La prueba de micrófono informa si se obtuvo una pista de audio.</small></p>
+<pre id="log">Registro de diagnóstico…</pre>
+</main>
+<script>
+(function(){
+  var logBox=document.getElementById('log');
+  var statusBox=document.getElementById('status');
+  var video=document.getElementById('preview');
+  var currentStream=null;
+  function log(s){
+    var d=new Date();
+    var stamp=d.toLocaleTimeString();
+    logBox.textContent+='\\n['+stamp+'] '+s;
+    logBox.scrollTop=logBox.scrollHeight;
+  }
+  function status(s){statusBox.textContent='Estado: '+s;log(s);}
+  function stop(){
+    if(currentStream){
+      currentStream.getTracks().forEach(function(t){t.stop();});
+      currentStream=null;
+    }
+    video.srcObject=null;
+    status('prueba detenida');
+  }
+  function enumerate(){
+    if(!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices){
+      log('enumerateDevices no está disponible');return;
+    }
+    navigator.mediaDevices.enumerateDevices().then(function(list){
+      log('Dispositivos encontrados: '+list.length);
+      list.forEach(function(d,i){
+        log((i+1)+'. tipo='+d.kind+' nombre='+(d.label||'(sin nombre)')+' id='+(d.deviceId?'disponible':'vacío'));
+      });
+    }).catch(function(e){log('Error enumerando: '+e.name+' - '+e.message);});
+  }
+  function test(kind){
+    stop();
+    var constraints={video:kind==='mic'?false:(kind==='both'?true:{width:{ideal:640},height:{ideal:480}}),
+                    audio:kind==='cam'?false:true};
+    status('solicitando '+(kind==='cam'?'cámara':kind==='mic'?'micrófono':'cámara y micrófono')+'…');
+    log('URL: '+location.href);
+    log('Origen: '+location.origin);
+    log('Contexto seguro: '+(window.isSecureContext===true));
+    log('getUserMedia moderno: '+!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia));
+    log('getUserMedia antiguo: '+!!(navigator.getUserMedia||navigator.webkitGetUserMedia));
+    log('Restricciones: '+JSON.stringify(constraints));
+    var gum=navigator.mediaDevices&&navigator.mediaDevices.getUserMedia;
+    if(gum){
+      var settled=false;
+      var timer=setTimeout(function(){
+        if(!settled){status('la solicitud sigue pendiente después de 12 segundos (no se recibió respuesta del navegador)');}
+      },12000);
+      try{
+        gum.call(navigator.mediaDevices,constraints).then(function(stream){
+          settled=true;clearTimeout(timer);currentStream=stream;
+          log('PROMESA RESUELTA. Pistas: '+stream.getTracks().length);
+          stream.getTracks().forEach(function(t){
+            log('Pista: '+t.kind+' | estado='+t.readyState+' | habilitada='+t.enabled);
+          });
+          if(stream.getVideoTracks().length){
+            video.srcObject=stream;
+            var p=video.play();
+            if(p&&p.catch)p.catch(function(e){log('video.play(): '+e.name+' - '+e.message);});
+          }
+          status('acceso concedido. Revisá el video y las pistas informadas.');
+          enumerate();
+        }).catch(function(e){
+          settled=true;clearTimeout(timer);
+          status('ERROR: '+e.name+' - '+e.message);
+        });
+      }catch(e){
+        settled=true;clearTimeout(timer);
+        status('EXCEPCIÓN: '+e.name+' - '+e.message);
+      }
+      return;
+    }
+    var old=navigator.getUserMedia||navigator.webkitGetUserMedia;
+    if(old){
+      old.call(navigator,constraints,function(stream){
+        currentStream=stream;log('PROMESA/CALLBACK RESUELTO (API antigua).');
+        stream.getTracks().forEach(function(t){log('Pista: '+t.kind+' | '+t.readyState);});
+        if(stream.getVideoTracks().length){video.srcObject=stream;}
+        status('acceso concedido mediante API antigua.');
+      },function(e){status('ERROR API antigua: '+(e.name||'')+' '+(e.message||e));});
+    }else{
+      status('este navegador no ofrece getUserMedia.');
+    }
+  }
+  document.getElementById('cam').onclick=function(){test('cam');};
+  document.getElementById('mic').onclick=function(){test('mic');};
+  document.getElementById('both').onclick=function(){test('both');};
+  document.getElementById('devices').onclick=function(){enumerate();};
+  document.getElementById('stop').onclick=stop;
+  log('Página cargada.');
+  log('Navegador: '+navigator.userAgent);
+  log('HTTPS: '+(location.protocol==='https:'));
+  log('Contexto seguro: '+(window.isSecureContext===true));
+})();
+</script>
+</body>
+</html>
