@@ -15,10 +15,10 @@
 .form{display:flex;margin-top:12px}input{min-width:0;flex:1;background:#080e19;border:1px solid #34435e;border-radius:11px 0 0 11px;padding:15px;color:white;font-size:1.1rem;letter-spacing:.12em;text-transform:uppercase}.btn{border:0;border-radius:11px;background:var(--blue);color:white;font-weight:bold;padding:14px 24px}.btn:disabled{opacity:.4;cursor:not-allowed}.form .btn{border-radius:0 11px 11px 0}.danger{background:var(--red)}#lobby-status{min-height:24px;margin-top:16px;color:#c5d4eb;font-size:.92rem;line-height:1.4}#lobby-status.error{color:#ff8798}
 #incoming{display:none;position:fixed;inset:0;z-index:20;background:#050911f5;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px}#incoming.active{display:flex}.incoming-icon{font-size:clamp(3.5rem,8vw,6rem);margin-bottom:18px}#incoming h2{font-size:clamp(1.8rem,4vw,3rem);margin:0 0 12px}#incoming-from{color:var(--muted);font-size:1.1rem;margin-bottom:28px}.actions{display:flex;flex-wrap:wrap;justify-content:center}.actions button{min-width:180px;margin:8px;padding:18px 25px;font-size:1.1rem}
 #callview{display:none;position:fixed;inset:0;background:#000;z-index:10}#callview.active{display:block}#remote-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
-#tap-to-play{display:none;position:absolute;inset:0;z-index:6;background:rgba(0,0,0,.55);align-items:center;justify-content:center;flex-direction:column;gap:14px;cursor:pointer}
+#tap-to-play{display:none;position:absolute;inset:0;z-index:6;background:rgba(0,0,0,.6);align-items:center;justify-content:center;flex-direction:column;gap:14px;cursor:pointer}
 #tap-to-play.show{display:flex}
-#tap-to-play .ttp-icon{font-size:4rem}
-#tap-to-play .ttp-label{font-size:1.3rem;font-weight:bold;color:#fff;text-align:center}
+#tap-to-play .ttp-icon{font-size:5rem}
+#tap-to-play .ttp-label{font-size:1.4rem;font-weight:bold;color:#fff;text-align:center;padding:0 20px}
 #no-remote{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;background:radial-gradient(ellipse,#18243a,#090d18 70%)}#no-remote .camicon{font-size:4rem;margin-bottom:14px}#no-remote p{color:var(--muted)}
 #local-video{position:absolute;right:28px;top:28px;width:clamp(150px,20vw,290px);aspect-ratio:4/3;object-fit:cover;border:3px solid #ffffffbb;border-radius:16px;background:#111;z-index:2}
 .calltop{position:absolute;top:28px;left:28px;z-index:3;background:#101827dd;border:1px solid #ffffff25;border-radius:30px;padding:12px 18px;display:flex;align-items:center}.callbottom{position:absolute;bottom:28px;left:0;right:0;display:flex;justify-content:center;z-index:4}.controls{display:flex;align-items:center;background:#101827ef;border:1px solid #ffffff24;border-radius:22px;padding:14px}.ctrl{width:70px;height:70px;border:0;border-radius:16px;background:#293750;color:white;font-size:1.6rem;margin:0 8px}.ctrl.off{background:#59303b}.ctrl.end{background:var(--red);width:82px}.callmsg{position:absolute;top:90px;left:50%;transform:translateX(-50%);z-index:5;background:#111b2b;padding:10px 16px;border-radius:10px;max-width:80%;text-align:center}.hidden{display:none!important}
@@ -33,8 +33,18 @@
 <div class="panel"><div class="label">Estado del dispositivo</div><div class="state" id="device-status">Preparando conexión…</div><div class="hint" id="device-hint">La cámara y el micrófono se solicitarán al iniciar o atender una llamada.</div></div></div>
 <div class="panel" style="margin-top:18px"><div class="label">Llamar a otro dispositivo</div><div class="form"><input id="remote-code-input" maxlength="6" placeholder="INGRESÁ EL CÓDIGO" autocomplete="off" aria-label="Código de la otra persona"><button class="btn" id="call-btn" disabled>Llamar</button></div><div id="lobby-status" role="status" aria-live="polite"></div></div></section></main>
 <section id="incoming" role="dialog" aria-modal="true"><div class="incoming-icon">📞</div><h2>Llamada entrante</h2><div id="incoming-from">Alguien quiere conectarse</div><div class="actions"><button class="btn danger" id="btn-reject">Rechazar</button><button class="btn" id="btn-answer">Atender llamada</button></div></section>
-<section id="callview"><video id="remote-video" autoplay playsinline></video>
-<div id="tap-to-play" role="button" tabindex="0"><div class="ttp-icon">▶</div><div class="ttp-label">Tocá para ver el video</div></div><div id="no-remote"><div class="camicon">📹</div><strong>Conectando video…</strong><p>Esperando la imagen del otro dispositivo</p></div><video id="local-video" autoplay playsinline muted></video><div class="calltop"><span class="dot ready"></span><span id="call-timer">En llamada · 0:00</span></div><div id="call-message" class="callmsg hidden"></div><div class="callbottom"><div class="controls"><button class="ctrl" id="btn-cam" aria-label="Cámara">📷</button><button class="ctrl" id="btn-mic" aria-label="Micrófono">🎙️</button><button class="ctrl end" id="btn-end" aria-label="Finalizar llamada">📵</button><button class="ctrl" id="btn-fs" aria-label="Pantalla completa">⛶</button></div></div></section>
+<section id="callview">
+  <video id="remote-video" autoplay playsinline></video>
+  <div id="tap-to-play" role="button" tabindex="0">
+    <div class="ttp-icon">▶</div>
+    <div class="ttp-label">Tocá aquí o presioná OK para ver el video</div>
+  </div>
+  <div id="no-remote"><div class="camicon">📹</div><strong>Conectando video…</strong><p>Esperando la imagen del otro dispositivo</p></div>
+  <video id="local-video" autoplay playsinline muted></video>
+  <div class="calltop"><span class="dot ready"></span><span id="call-timer">En llamada · 0:00</span></div>
+  <div id="call-message" class="callmsg hidden"></div>
+  <div class="callbottom"><div class="controls"><button class="ctrl" id="btn-cam" aria-label="Cámara">📷</button><button class="ctrl" id="btn-mic" aria-label="Micrófono">🎙️</button><button class="ctrl end" id="btn-end" aria-label="Finalizar llamada">📵</button><button class="ctrl" id="btn-fs" aria-label="Pantalla completa">⛶</button></div></div>
+</section>
 <script>
 (function(){
 'use strict';
@@ -44,141 +54,169 @@ function msg(t,err){$('lobby-status').textContent=t||'';$('lobby-status').classN
 function code(){var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';for(var i=0;i<6;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
 function peerState(c,t){$('peer-dot').className='dot '+c;$('peer-status').textContent=t}
 function callMsg(t){$('call-message').textContent=t;$('call-message').classList.remove('hidden');setTimeout(function(){$('call-message').classList.add('hidden')},4500)}
-function play(v){
-  if(!v.srcObject)return;
-  var p=v.play();
-  if(p&&p.catch)p.catch(function(){
-    // autoplay bloqueado: mostrar botón "tocá para ver"
-    if(v.id==='remote-video'){
-      $('tap-to-play').classList.add('show');
-    } else {
-      callMsg('Presioná OK o ENTER para activar la cámara local.');
-    }
-  });
-}
-// tap-to-play: click o Enter activa el video remoto
-;(function(){
+
+// tap-to-play: activa video remoto con click, Enter o cualquier tecla TV
+(function(){
   var ttp=$('tap-to-play');
-  if(!ttp)return;
   function activate(){
     var rv=$('remote-video');
+    if(!rv.srcObject){ttp.classList.remove('show');return}
     rv.play().then(function(){ttp.classList.remove('show')}).catch(function(){});
   }
   ttp.addEventListener('click',activate);
-  ttp.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' ')activate()});
-  // también cualquier tecla en la TV activa el video
+  ttp.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();activate()}});
   document.addEventListener('keydown',function(e){
     if(ttp.classList.contains('show')&&e.key!=='Escape'){activate();}
   });
 })();
 
-// media(): intenta múltiples constraints de menos a más específico
-// crítico para webOS que rechaza constraints complejas
-function media(){
-  return new Promise(function(resolve,reject){
-    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-      reject(new Error('Este navegador no soporta getUserMedia.'));return;
+function playVideo(v){
+  if(!v||!v.srcObject)return;
+  var p=v.play();
+  if(p&&p.catch)p.catch(function(){
+    if(v.id==='remote-video'){
+      $('tap-to-play').classList.add('show');
+    } else {
+      callMsg('Presioná OK para activar la cámara local.');
     }
-    // secuencia de intentos: webOS necesita constraints simples
-    var attempts=[
-      {video:true,audio:true},
-      {video:true,audio:false},
-      {video:{facingMode:'user'},audio:false},
-      {video:{width:640,height:480},audio:false},
-      {video:{width:{min:160,max:640},height:{min:120,max:480}},audio:false}
-    ];
-    var idx=0;
-    function tryNext(){
-      if(idx>=attempts.length){
-        reject(new Error('No se pudo abrir la cámara. Verificá permisos y conexión USB.'));return;
-      }
-      var c=attempts[idx++];
-      navigator.mediaDevices.getUserMedia(c)
-        .then(function(s){
-          if(!c.audio) callMsg('Cámara activada sin micrófono.');
-          resolve(s);
-        })
-        .catch(function(e){
-          // OverconstrainedError o NotSupportedError → probar siguiente
-          if(e.name==='OverconstrainedError'||e.name==='ConstraintNotSatisfiedError'||
-             e.name==='NotSupportedError'||e.name==='TypeError'){
-            tryNext();
-          } else if(e.name==='NotFoundError'||e.name==='DevicesNotFoundError'){
-            reject(new Error('No se encontró cámara. Verificá la conexión USB.'));
-          } else if(e.name==='NotAllowedError'||e.name==='PermissionDeniedError'){
-            reject(new Error('Permiso denegado. Aceptá el acceso a la cámara.'));
-          } else {
-            tryNext(); // en caso de error desconocido, seguir intentando
-          }
-        });
-    }
-    tryNext();
   });
 }
 
-function setLocal(s){localStream=s;$('local-video').srcObject=s;play($('local-video'));audioOn=s.getAudioTracks().length>0;videoOn=s.getVideoTracks().length>0;controls()}
+// media(): intenta video+audio, luego solo video
+// La cámara USB de la TV no tiene micrófono — funciona igual sin él
+function media(){
+  return new Promise(function(resolve,reject){
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+      reject(new Error('Este navegador no permite acceder a la cámara (getUserMedia).'));return;
+    }
+    var done=false;
+    var timeout=setTimeout(function(){
+      if(!done){done=true;reject(new Error('La cámara tardó demasiado. Revisá el USB y los permisos.'))}
+    },15000);
+    // Intento 1: video + audio
+    navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720}},audio:true})
+    .then(function(s){
+      if(done){s.getTracks().forEach(function(t){t.stop()});return}
+      done=true;clearTimeout(timeout);resolve(s);
+    })
+    .catch(function(){
+      // Intento 2: solo video (TV sin micrófono)
+      navigator.mediaDevices.getUserMedia({video:true,audio:false})
+      .then(function(s){
+        if(done){s.getTracks().forEach(function(t){t.stop()});return}
+        done=true;clearTimeout(timeout);
+        callMsg('Cámara activada (sin micrófono).');
+        resolve(s);
+      })
+      .catch(function(){
+        // Intento 3: video mínimo para webOS
+        navigator.mediaDevices.getUserMedia({video:{width:{min:160,max:640},height:{min:120,max:480}},audio:false})
+        .then(function(s){
+          if(done){s.getTracks().forEach(function(t){t.stop()});return}
+          done=true;clearTimeout(timeout);
+          callMsg('Cámara activada en resolución baja (sin micrófono).');
+          resolve(s);
+        })
+        .catch(function(e){
+          if(done)return;
+          done=true;clearTimeout(timeout);
+          reject(new Error('No se pudo abrir la cámara: '+(e.message||'verificá permisos y conexión USB.')));
+        });
+      });
+    });
+  });
+}
+
+function setLocal(s){localStream=s;$('local-video').srcObject=s;playVideo($('local-video'));audioOn=s.getAudioTracks().length>0;videoOn=s.getVideoTracks().length>0;controls()}
 function stopLocal(){if(localStream){localStream.getTracks().forEach(function(t){t.stop()});localStream=null}$('local-video').srcObject=null}
+
 function init(){
- if(typeof Peer==='undefined'){peerState('error','Error de biblioteca');msg('No se pudo cargar PeerJS. Revisá Internet.',true);return}
- myCode=code();$('my-code').textContent=myCode;
- peer=new Peer(myCode,{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:1,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'}]}});
- peer.on('open',function(){peerState('ready','Conectado');$('call-btn').disabled=false;$('device-status').textContent='Listo para llamar';msg('Compartí tu código o ingresá el de otro dispositivo.')});
- peer.on('call',function(c){if(currentCall){c.close();return}pendingCall=c;$('incoming-from').textContent='Código del contacto: '+c.peer;$('incoming').classList.add('active');$('btn-answer').focus()});
- peer.on('error',function(e){if(e.type==='unavailable-id'){peer.destroy();setTimeout(init,500);return}peerState('error','Error de conexión');msg('PeerJS: '+(e.message||e.type),true);$('call-btn').disabled=false});
- peer.on('disconnected',function(){peerState('waiting','Reconectando…');try{peer.reconnect()}catch(e){}});
+  if(typeof Peer==='undefined'){peerState('error','Error de biblioteca');msg('No se pudo cargar PeerJS. Revisá Internet.',true);return}
+  myCode=code();$('my-code').textContent=myCode;
+  peer=new Peer(myCode,{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:1,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'}]}});
+  peer.on('open',function(){peerState('ready','Conectado');$('call-btn').disabled=false;$('device-status').textContent='Listo para llamar';msg('Compartí tu código o ingresá el de otro dispositivo.')});
+  peer.on('call',function(c){if(currentCall){c.close();return}pendingCall=c;$('incoming-from').textContent='Código del contacto: '+c.peer;$('incoming').classList.add('active');$('btn-answer').focus()});
+  peer.on('error',function(e){if(e.type==='unavailable-id'){peer.destroy();setTimeout(init,500);return}peerState('error','Error de conexión');msg('PeerJS: '+(e.message||e.type),true);$('call-btn').disabled=false});
+  peer.on('disconnected',function(){peerState('waiting','Reconectando…');try{peer.reconnect()}catch(e){}});
 }
+
 function enter(){$('lobby').style.display='none';$('incoming').classList.remove('active');$('callview').classList.add('active');started=Date.now();clearInterval(timerId);tick();timerId=setInterval(tick,1000)}
+
 function setup(c){
- currentCall=c;
- c.on('stream',function(s){$('remote-video').srcObject=s;$('no-remote').style.display='none';play($('remote-video'));enter()});
- c.on('close',function(){finish(false)});
- c.on('error',function(e){callMsg('Error de llamada: '+(e.message||'conexión interrumpida'));finish(false)});
- c.on('iceStateChanged',function(s){if(s==='failed')callMsg('No se pudo establecer conexión entre las redes.');if(s==='disconnected')callMsg('Conexión interrumpida; intentando recuperar…')});
- setTimeout(function(){if(currentCall===c)enter()},1800);
+  currentCall=c;
+  var enteredCall=false;
+  function ensureEntered(){if(!enteredCall){enteredCall=true;enter();}}
+  c.on('stream',function(s){
+    var rv=$('remote-video');
+    rv.srcObject=s;
+    $('no-remote').style.display='none';
+    ensureEntered();
+    // play directo — si falla muestra tap-to-play
+    var p=rv.play();
+    if(p&&p.catch)p.catch(function(){$('tap-to-play').classList.add('show');});
+  });
+  c.on('close',function(){finish(false)});
+  c.on('error',function(e){callMsg('Error de llamada: '+(e.message||'conexión interrumpida'));finish(false)});
+  c.on('iceStateChanged',function(s){
+    if(s==='failed')callMsg('No se pudo establecer conexión entre las redes.');
+    if(s==='disconnected')callMsg('Conexión interrumpida; intentando recuperar…');
+  });
+  // Entrar a la vista de llamada después de 2s aunque no llegue stream aún
+  setTimeout(function(){if(currentCall===c)ensureEntered()},2000);
 }
+
 function answer(){
- var c=pendingCall;if(!c)return;pendingCall=null;$('incoming').classList.remove('active');
- msg('Solicitando acceso a cámara…');
- media().then(function(s){setLocal(s);c.answer(s);setup(c);msg('')}).catch(function(e){
-   $('device-status').textContent='Sin cámara local';
-   $('device-hint').textContent=e.message;
-   msg('Atendiendo sin cámara: '+e.message);
-   try{c.answer(null);setup(c)}catch(x){msg('No se pudo atender: '+x.message,true);c.close()}
- });
+  var c=pendingCall;if(!c)return;pendingCall=null;$('incoming').classList.remove('active');
+  msg('Solicitando acceso a cámara…');
+  media().then(function(s){
+    setLocal(s);c.answer(s);setup(c);msg('');
+  }).catch(function(e){
+    $('device-status').textContent='Sin cámara local';
+    $('device-hint').textContent=e.message;
+    msg('Atendiendo sin cámara: '+e.message);
+    // answer con stream vacío para que el otro reciba al menos el audio
+    try{
+      var empty=new MediaStream();
+      c.answer(empty);setup(c);
+    }catch(x){msg('No se pudo atender: '+x.message,true);c.close();}
+  });
 }
+
 function dial(){
- var id=$('remote-code-input').value.trim().toUpperCase();
- if(!id){msg('Ingresá el código.',true);return}
- if(id.length!==6){msg('El código debe tener 6 caracteres.',true);return}
- if(id===myCode){msg('Ese es tu propio código.',true);return}
- if(!peer||!peer.open){msg('Esperá a que se conecte el servidor.',true);return}
- $('call-btn').disabled=true;msg('Solicitando acceso a cámara…');
- media().then(function(s){
-   setLocal(s);msg('Llamando a '+id+'…');
-   var c;try{c=peer.call(id,s)}catch(e){msg('No se pudo iniciar: '+e.message,true);stopLocal();$('call-btn').disabled=false;return}
-   if(!c){msg('No se pudo iniciar la llamada. Revisá el código.',true);stopLocal();$('call-btn').disabled=false;return}
-   setup(c);
- }).catch(function(e){
-   msg(e.message,true);
-   $('device-status').textContent='Cámara no disponible';
-   $('device-hint').textContent=e.message;
-   $('call-btn').disabled=false;
- });
+  var id=$('remote-code-input').value.trim().toUpperCase();
+  if(!id){msg('Ingresá el código.',true);return}
+  if(id.length!==6){msg('El código debe tener 6 caracteres.',true);return}
+  if(id===myCode){msg('Ese es tu propio código.',true);return}
+  if(!peer||!peer.open){msg('Esperá a que se conecte el servidor.',true);return}
+  $('call-btn').disabled=true;msg('Solicitando acceso a cámara…');
+  media().then(function(s){
+    setLocal(s);msg('Llamando a '+id+'…');
+    var c;try{c=peer.call(id,s)}catch(e){msg('No se pudo iniciar: '+e.message,true);stopLocal();$('call-btn').disabled=false;return}
+    if(!c){msg('No se pudo iniciar la llamada. Revisá el código.',true);stopLocal();$('call-btn').disabled=false;return}
+    setup(c);
+  }).catch(function(e){
+    msg(e.message,true);$('device-status').textContent='Cámara no disponible';$('device-hint').textContent=e.message;$('call-btn').disabled=false;
+  });
 }
+
 function finish(closeIt){
- clearInterval(timerId);var c=currentCall;currentCall=null;
- if(closeIt&&c){try{c.close()}catch(e){}}
- stopLocal();
- var rv=$('remote-video');
- if(rv.srcObject){try{rv.srcObject.getTracks().forEach(function(t){t.stop()})}catch(e){}}
- rv.srcObject=null;$('no-remote').style.display='flex';
- $('callview').classList.remove('active');$('incoming').classList.remove('active');
- $('lobby').style.display='flex';$('call-btn').disabled=false;
- started=0;$('call-timer').textContent='En llamada · 0:00';
- audioOn=true;videoOn=true;controls();msg('Llamada finalizada.');$('remote-code-input').focus();
+  clearInterval(timerId);var c=currentCall;currentCall=null;
+  if(closeIt&&c){try{c.close()}catch(e){}}
+  stopLocal();
+  var rv=$('remote-video');
+  if(rv.srcObject){try{rv.srcObject.getTracks().forEach(function(t){t.stop()})}catch(e){}}
+  rv.srcObject=null;
+  $('tap-to-play').classList.remove('show');
+  $('no-remote').style.display='flex';
+  $('callview').classList.remove('active');$('incoming').classList.remove('active');
+  $('lobby').style.display='flex';$('call-btn').disabled=false;
+  started=0;$('call-timer').textContent='En llamada · 0:00';
+  audioOn=true;videoOn=true;controls();msg('Llamada finalizada.');$('remote-code-input').focus();
 }
+
 function tick(){if(!started)return;var s=Math.floor((Date.now()-started)/1000),m=Math.floor(s/60);$('call-timer').textContent='En llamada · '+m+':'+(s%60<10?'0':'')+(s%60)}
 function controls(){$('btn-cam').classList.toggle('off',!videoOn);$('btn-mic').classList.toggle('off',!audioOn);$('btn-cam').textContent=videoOn?'📷':'🚫';$('btn-mic').textContent=audioOn?'🎙️':'🔇'}
+
 $('btn-answer').onclick=answer;
 $('btn-reject').onclick=function(){$('incoming').classList.remove('active');if(pendingCall){pendingCall.close();pendingCall=null}};
 $('call-btn').onclick=dial;
@@ -189,11 +227,11 @@ $('btn-cam').onclick=function(){if(!localStream)return;videoOn=!videoOn;localStr
 $('btn-mic').onclick=function(){if(!localStream)return;audioOn=!audioOn;localStream.getAudioTracks().forEach(function(t){t.enabled=audioOn});controls()};
 $('btn-fs').onclick=function(){var el=document.documentElement;if(!document.fullscreenElement){if(el.requestFullscreen)el.requestFullscreen().catch(function(){});else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen()}else if(document.exitFullscreen)document.exitFullscreen()};
 document.addEventListener('keydown',function(e){
- if(e.key==='Escape'&&$('callview').classList.contains('active')){finish(true);return}
- if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].indexOf(e.key)<0)return;
- var a=Array.prototype.slice.call(document.querySelectorAll('button:not(:disabled),input:not(:disabled)')).filter(function(x){return x.offsetParent!==null});
- var i=a.indexOf(document.activeElement);if(i<0){if(a.length)a[0].focus();return}
- i=(e.key==='ArrowLeft'||e.key==='ArrowUp')?(i-1+a.length)%a.length:(i+1)%a.length;a[i].focus();e.preventDefault();
+  if(e.key==='Escape'&&$('callview').classList.contains('active')){finish(true);return}
+  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].indexOf(e.key)<0)return;
+  var a=Array.prototype.slice.call(document.querySelectorAll('button:not(:disabled),input:not(:disabled)')).filter(function(x){return x.offsetParent!==null});
+  var i=a.indexOf(document.activeElement);if(i<0){if(a.length)a[0].focus();return}
+  i=(e.key==='ArrowLeft'||e.key==='ArrowUp')?(i-1+a.length)%a.length:(i+1)%a.length;a[i].focus();e.preventDefault();
 });
 window.addEventListener('beforeunload',function(){try{if(currentCall)currentCall.close();if(peer)peer.destroy()}catch(e){}stopLocal()});
 init();
