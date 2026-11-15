@@ -1,0 +1,595 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Videollamada TV</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --border: #2a2a3a;
+    --accent: #3b82f6;
+    --accent2: #22c55e;
+    --danger: #ef4444;
+    --fg: #e8e8f0;
+    --fg2: #9090a8;
+    --focus: #60a5fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    overflow: hidden;
+  }
+  #app { width: 100%; height: 100%; display: flex; flex-direction: column; }
+
+  /* ---- SCREENS ---- */
+  .screen {
+    display: none;
+    width: 100%; height: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+  .screen.active { display: flex; }
+
+  /* ---- HOME SCREEN ---- */
+  #screen-home h1 {
+    font-size: 2.4em;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    color: var(--fg);
+  }
+  #screen-home .subtitle {
+    font-size: 1em;
+    color: var(--fg2);
+    margin-bottom: 48px;
+  }
+  .room-box {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 48px;
+    width: 540px;
+    max-width: 90vw;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .room-box label {
+    font-size: 0.85em;
+    color: var(--fg2);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .room-box input {
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    color: var(--fg);
+    font-size: 1.5em;
+    padding: 14px 20px;
+    text-align: center;
+    letter-spacing: 0.15em;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .room-box input:focus,
+  .room-box input.focused {
+    border-color: var(--focus);
+    box-shadow: 0 0 0 3px rgba(96,165,250,0.15);
+  }
+  .btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1em;
+    font-weight: 600;
+    padding: 16px 24px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+    outline: none;
+    letter-spacing: 0.03em;
+  }
+  .btn:focus, .btn.focused {
+    box-shadow: 0 0 0 4px rgba(96,165,250,0.4);
+    background: var(--focus);
+  }
+  .btn.danger { background: var(--danger); }
+  .btn.danger:focus, .btn.danger.focused {
+    box-shadow: 0 0 0 4px rgba(239,68,68,0.4);
+    background: #f87171;
+  }
+  .btn.success { background: var(--accent2); }
+  .btn.success:focus, .btn.success.focused {
+    box-shadow: 0 0 0 4px rgba(34,197,94,0.4);
+    background: #4ade80;
+  }
+  .my-id-box {
+    margin-top: 24px;
+    text-align: center;
+    color: var(--fg2);
+    font-size: 0.9em;
+  }
+  .my-id-box span {
+    display: inline-block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 16px;
+    margin-top: 6px;
+    font-size: 1.2em;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    font-weight: 600;
+  }
+  #status-msg {
+    margin-top: 20px;
+    font-size: 0.9em;
+    color: var(--fg2);
+    min-height: 1.4em;
+    text-align: center;
+  }
+  #status-msg.error { color: var(--danger); }
+  #status-msg.ok { color: var(--accent2); }
+
+  /* ---- INCOMING CALL ---- */
+  #screen-incoming {
+    gap: 32px;
+    text-align: center;
+  }
+  #screen-incoming .caller-icon {
+    font-size: 5em;
+    animation: pulse 1.2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.08); opacity: 0.75; }
+  }
+  #screen-incoming h2 { font-size: 1.8em; font-weight: 300; }
+  #screen-incoming .caller-id {
+    font-size: 1.3em;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+  }
+  #screen-incoming .call-buttons {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+  }
+  #screen-incoming .btn { min-width: 160px; font-size: 1.1em; }
+
+  /* ---- CALL SCREEN ---- */
+  #screen-call {
+    padding: 0;
+    position: relative;
+    background: #000;
+  }
+  #video-remote {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  #video-local {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    width: 200px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.3);
+    background: #111;
+    z-index: 10;
+  }
+  #call-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 24px 40px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 20;
+  }
+  #call-info {
+    color: #fff;
+    font-size: 1em;
+  }
+  #call-info .peer { font-size: 1.2em; font-weight: 600; letter-spacing: 0.1em; }
+  #call-info .timer { color: rgba(255,255,255,0.7); font-size: 0.9em; margin-top: 4px; }
+  #call-controls { display: flex; gap: 16px; }
+  #call-controls .btn { padding: 14px 28px; }
+
+  /* ---- CONNECTING SCREEN ---- */
+  #screen-connecting {
+    gap: 24px;
+    text-align: center;
+  }
+  .spinner {
+    width: 56px; height: 56px;
+    border: 4px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #screen-connecting h2 { font-size: 1.5em; font-weight: 300; }
+  #screen-connecting p { color: var(--fg2); }
+
+  /* ---- KEYBOARD HINT ---- */
+  #hint {
+    position: fixed;
+    bottom: 16px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75em;
+    color: var(--fg2);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HOME -->
+  <div id="screen-home" class="screen active">
+    <h1>&#128250; Videollamada TV</h1>
+    <p class="subtitle">Conectá con tu familia desde el televisor</p>
+    <div class="room-box">
+      <label>Codigo de sala</label>
+      <input type="text" id="room-input" maxlength="8" placeholder="ej: CASA01"
+             autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+      <button class="btn success" id="btn-call">&#128222; Llamar</button>
+    </div>
+    <div class="my-id-box">
+      Tu ID en esta TV:<br>
+      <span id="my-peer-id">conectando...</span>
+    </div>
+    <div id="status-msg"></div>
+  </div>
+
+  <!-- INCOMING -->
+  <div id="screen-incoming" class="screen">
+    <div class="caller-icon">&#128222;</div>
+    <h2>Llamada entrante</h2>
+    <div class="caller-id" id="incoming-caller-id">---</div>
+    <div class="call-buttons">
+      <button class="btn success" id="btn-accept">&#10003; Atender</button>
+      <button class="btn danger" id="btn-reject">&#10005; Rechazar</button>
+    </div>
+  </div>
+
+  <!-- CONNECTING -->
+  <div id="screen-connecting" class="screen">
+    <div class="spinner"></div>
+    <h2>Conectando...</h2>
+    <p id="connecting-msg">Iniciando camara y microfono</p>
+    <button class="btn danger" id="btn-cancel-connect" style="margin-top:16px">Cancelar</button>
+  </div>
+
+  <!-- CALL -->
+  <div id="screen-call" class="screen">
+    <video id="video-remote" autoplay playsinline></video>
+    <video id="video-local" autoplay playsinline muted></video>
+    <div id="call-overlay">
+      <div id="call-info">
+        <div class="peer" id="call-peer-id">---</div>
+        <div class="timer" id="call-timer">00:00</div>
+      </div>
+      <div id="call-controls">
+        <button class="btn danger" id="btn-hangup">&#128222; Colgar</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div id="hint">Flechas para navegar &bull; OK para seleccionar &bull; BACK para volver</div>
+
+<!-- PeerJS desde CDN compatible con Chromium 87 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js"></script>
+<script>
+'use strict';
+
+// ---- STATE ----
+var peer = null;
+var localStream = null;
+var currentCall = null;
+var callTimer = null;
+var callSeconds = 0;
+var currentScreen = 'home';
+var focusIndex = 0;
+var incomingCall = null;
+
+// PeerJS config - usar servidor publico de PeerJS
+var PEER_CONFIG = {
+  host: '0.peerjs.com',
+  port: 443,
+  secure: true,
+  path: '/',
+  debug: 1,
+  config: {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      // TURN publico de freeturn.net (sin autenticacion)
+      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' }
+    ]
+  }
+};
+
+// ---- SCREENS ----
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById('screen-' + name).classList.add('active');
+  currentScreen = name;
+  focusIndex = 0;
+  updateFocus();
+}
+
+// ---- FOCUS MANAGEMENT (control remoto) ----
+var FOCUSABLE = {
+  home: ['room-input', 'btn-call'],
+  incoming: ['btn-accept', 'btn-reject'],
+  connecting: ['btn-cancel-connect'],
+  call: ['btn-hangup']
+};
+
+function getFocusables() {
+  var ids = FOCUSABLE[currentScreen] || [];
+  return ids.map(function(id) { return document.getElementById(id); }).filter(Boolean);
+}
+
+function updateFocus() {
+  var els = getFocusables();
+  els.forEach(function(el, i) {
+    if (i === focusIndex) {
+      el.classList.add('focused');
+      el.focus();
+    } else {
+      el.classList.remove('focused');
+    }
+  });
+}
+
+function moveFocus(dir) {
+  var els = getFocusables();
+  if (!els.length) return;
+  focusIndex = (focusIndex + dir + els.length) % els.length;
+  updateFocus();
+}
+
+function activateFocused() {
+  var els = getFocusables();
+  var el = els[focusIndex];
+  if (!el) return;
+  if (el.tagName === 'BUTTON') el.click();
+  else if (el.tagName === 'INPUT') el.focus();
+}
+
+// ---- KEYBOARD / REMOTE ----
+document.addEventListener('keydown', function(e) {
+  var k = e.keyCode;
+  // Arrow keys
+  if (k === 38 || k === 37) { e.preventDefault(); moveFocus(-1); return; } // UP / LEFT
+  if (k === 40 || k === 39) { e.preventDefault(); moveFocus(1); return; }  // DOWN / RIGHT
+  // OK / Enter
+  if (k === 13) { e.preventDefault(); activateFocused(); return; }
+  // Back
+  if (k === 8 || k === 461) {
+    e.preventDefault();
+    if (currentScreen === 'call') hangUp();
+    else if (currentScreen === 'connecting') cancelConnect();
+    else if (currentScreen === 'incoming') rejectCall();
+    return;
+  }
+  // Number/letter keys to type in room input when on home screen
+  if (currentScreen === 'home') {
+    var inp = document.getElementById('room-input');
+    if (document.activeElement !== inp) return;
+    // Let default handle typing
+  }
+});
+
+// ---- STATUS ----
+function setStatus(msg, type) {
+  var el = document.getElementById('status-msg');
+  el.textContent = msg;
+  el.className = type || '';
+}
+
+// ---- PEER INIT ----
+function initPeer() {
+  setStatus('Conectando al servidor PeerJS...');
+  // Generar ID tipo TV-XXXX
+  var tvId = 'TV' + Math.random().toString(36).substr(2,4).toUpperCase();
+  peer = new Peer(tvId, PEER_CONFIG);
+
+  peer.on('open', function(id) {
+    document.getElementById('my-peer-id').textContent = id;
+    setStatus('Listo. Compartí este ID con quien quieras llamarte.', 'ok');
+  });
+
+  peer.on('call', function(call) {
+    incomingCall = call;
+    document.getElementById('incoming-caller-id').textContent = call.peer;
+    showScreen('incoming');
+  });
+
+  peer.on('error', function(err) {
+    setStatus('Error PeerJS: ' + err.type, 'error');
+    console.error('Peer error:', err);
+  });
+
+  peer.on('disconnected', function() {
+    setStatus('Desconectado del servidor. Reconectando...');
+    setTimeout(function() { if (peer) peer.reconnect(); }, 3000);
+  });
+}
+
+// ---- GET USER MEDIA ----
+function getMedia(callback) {
+  document.getElementById('connecting-msg').textContent = 'Iniciando camara y microfono...';
+  showScreen('connecting');
+
+  var constraints = { video: { width: 640, height: 480 }, audio: true };
+
+  // Chromium 87 puede necesitar prefixed o no
+  var gum = navigator.mediaDevices && navigator.mediaDevices.getUserMedia
+    ? function(c, ok, err) { navigator.mediaDevices.getUserMedia(c).then(ok).catch(err); }
+    : function(c, ok, err) {
+        var fn = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+        if (fn) fn.call(navigator, c, ok, err);
+        else err(new Error('getUserMedia no disponible'));
+      };
+
+  gum(constraints,
+    function(stream) {
+      localStream = stream;
+      document.getElementById('video-local').srcObject = stream;
+      document.getElementById('connecting-msg').textContent = 'Camara lista. Conectando...';
+      callback(null, stream);
+    },
+    function(err) {
+      setStatus('Error camara: ' + err.name + ' - ' + err.message, 'error');
+      showScreen('home');
+      console.error('getUserMedia error:', err);
+      callback(err);
+    }
+  );
+}
+
+// ---- CALL OUT ----
+function startCall() {
+  var roomId = document.getElementById('room-input').value.trim().toUpperCase();
+  if (!roomId) { setStatus('Ingresa un codigo de sala', 'error'); return; }
+  if (!peer || !peer.open) { setStatus('Sin conexion al servidor PeerJS', 'error'); return; }
+
+  getMedia(function(err) {
+    if (err) return;
+    document.getElementById('connecting-msg').textContent = 'Llamando a ' + roomId + '...';
+    var call = peer.call(roomId, localStream);
+    if (!call) {
+      setStatus('No se pudo iniciar la llamada', 'error');
+      showScreen('home');
+      return;
+    }
+    setupCall(call, roomId);
+  });
+}
+
+// ---- ACCEPT INCOMING ----
+function acceptCall() {
+  if (!incomingCall) return;
+  var call = incomingCall;
+  incomingCall = null;
+
+  getMedia(function(err) {
+    if (err) return;
+    call.answer(localStream);
+    setupCall(call, call.peer);
+  });
+}
+
+function rejectCall() {
+  if (incomingCall) {
+    incomingCall.close();
+    incomingCall = null;
+  }
+  showScreen('home');
+}
+
+// ---- SETUP ACTIVE CALL ----
+function setupCall(call, peerId) {
+  currentCall = call;
+  document.getElementById('call-peer-id').textContent = peerId;
+  callSeconds = 0;
+
+  call.on('stream', function(remoteStream) {
+    document.getElementById('video-remote').srcObject = remoteStream;
+    showScreen('call');
+    startCallTimer();
+  });
+
+  call.on('close', function() {
+    endCall();
+  });
+
+  call.on('error', function(err) {
+    console.error('Call error:', err);
+    endCall();
+  });
+}
+
+// ---- HANG UP ----
+function hangUp() {
+  if (currentCall) { currentCall.close(); currentCall = null; }
+  endCall();
+}
+
+function endCall() {
+  stopCallTimer();
+  if (localStream) {
+    localStream.getTracks().forEach(function(t) { t.stop(); });
+    localStream = null;
+  }
+  document.getElementById('video-remote').srcObject = null;
+  document.getElementById('video-local').srcObject = null;
+  showScreen('home');
+  setStatus('Llamada finalizada.');
+}
+
+function cancelConnect() {
+  if (localStream) {
+    localStream.getTracks().forEach(function(t) { t.stop(); });
+    localStream = null;
+  }
+  showScreen('home');
+}
+
+// ---- TIMER ----
+function startCallTimer() {
+  callTimer = setInterval(function() {
+    callSeconds++;
+    var m = Math.floor(callSeconds / 60);
+    var s = callSeconds % 60;
+    document.getElementById('call-timer').textContent =
+      (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }, 1000);
+}
+
+function stopCallTimer() {
+  if (callTimer) { clearInterval(callTimer); callTimer = null; }
+}
+
+// ---- BUTTON WIRING ----
+document.getElementById('btn-call').addEventListener('click', startCall);
+document.getElementById('btn-accept').addEventListener('click', acceptCall);
+document.getElementById('btn-reject').addEventListener('click', rejectCall);
+document.getElementById('btn-hangup').addEventListener('click', hangUp);
+document.getElementById('btn-cancel-connect').addEventListener('click', cancelConnect);
+
+// Enter en el input también llama
+document.getElementById('room-input').addEventListener('keydown', function(e) {
+  if (e.keyCode === 13) startCall();
+});
+
+// ---- INIT ----
+initPeer();
+showScreen('home');
+updateFocus();
+</script>
+</body>
+</html>
+
+</body></html>
