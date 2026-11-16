@@ -1,22 +1,7 @@
 <!doctype html>
 <html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#090d18">
-<title>LG Video Call</title>
-<meta name="description" content="LG Video Call: videollamadas desde tu LG Smart TV.">
-
-<meta property="og:type" content="website">
-<meta property="og:title" content="LG Video Call">
-<meta property="og:description" content="Videollamadas desde tu LG Smart TV.">
-<meta property="og:url" content="https://sergiomolina-fotografia.github.io/Videollamada-LG-app/">
-<meta property="og:image" content="https://sergiomolina-fotografia.github.io/Videollamada-LG-app/og-image.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="LG Video Call">
-<meta name="twitter:description" content="Videollamadas desde tu LG Smart TV.">
-<meta name="twitter:image" content="https://sergiomolina-fotografia.github.io/Videollamada-LG-app/og-image.png">
+<meta name="theme-color" content="#090d18"><title>LG Video Call</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js"></script>
 <style>
 :root{color-scheme:dark;--bg:#090d18;--panel:#121c2e;--panel2:#0d1524;--line:#2a3852;--fg:#f2f6ff;--muted:#9aa9c2;--blue:#347cf6;--blue2:#65a1ff;--red:#ed5268;--green:#43d99a;font-family:Arial,Helvetica,sans-serif}
@@ -37,28 +22,6 @@ button,input{font:inherit}button{cursor:pointer}button:focus,input:focus{outline
 @media(max-width:900px){.card{width:min(100%,760px)}.top{margin-bottom:12px}.hero{margin-bottom:12px}}
 @media(max-width:700px){#lobby{justify-content:flex-start;padding:16px 14px;overflow:auto}.card{max-height:none}.grid{grid-template-columns:1fr}.panel{padding:14px}.hero{margin-bottom:14px}#local-video{width:112px;right:12px;top:12px}.calltop{left:12px;top:12px;padding:9px 13px}.callbottom{bottom:12px}.controls{padding:7px}.ctrl{width:49px;height:49px;font-size:1.2rem;margin:0 3px}.ctrl.end{width:56px}}
 @media(max-height:800px) and (min-width:701px){#lobby{padding-top:10px;padding-bottom:10px}.top{margin-bottom:10px}.hero{margin-bottom:10px}.hero h1{font-size:clamp(1.4rem,2.3vw,2rem)}.card{padding:14px}.panel{padding:12px}.code{font-size:clamp(1.8rem,3.6vw,2.6rem)}.hint{margin-top:5px}.label{margin-bottom:6px}}
-
-/* Ajustes de pantalla para Smart TV: compacto, pero desplazable si hace falta. */
-html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
-body{min-height:100vh}
-#lobby{height:auto;min-height:100vh;justify-content:flex-start;overflow:visible;padding:12px clamp(16px,3vw,40px) 22px}
-.top{margin-bottom:10px}
-.hero{margin-bottom:10px}
-.hero h1{font-size:clamp(1.35rem,2vw,2rem);margin-bottom:4px}
-.hero p{font-size:clamp(.82rem,1vw,.95rem)}
-.card{max-height:none;overflow:visible;width:min(100%,980px);padding:14px}
-.grid{gap:10px}
-.panel{padding:12px}
-.card>.panel{margin-top:10px!important}
-.label{margin-bottom:5px}
-.code{font-size:clamp(1.8rem,3vw,2.5rem)}
-.hint{font-size:.82rem;margin-top:5px}
-.form{margin-top:7px}
-input{padding:9px 11px}
-.btn{padding:9px 16px}
-#lobby-status{margin-top:7px}
-.callmsg{max-width:min(88%,900px);line-height:1.4;font-size:clamp(.9rem,1.3vw,1.1rem)}
-@media(max-width:700px){#lobby{padding:14px;overflow:visible}.card{max-height:none}.grid{grid-template-columns:1fr}}
 </style></head><body>
 <main id="lobby">
 <header class="top"><div class="brand"><span class="mark">▶</span>LG VIDEO CALL</div><div class="connection"><span class="dot waiting" id="peer-dot"></span><span id="peer-status">Conectando…</span></div></header>
@@ -72,21 +35,51 @@ input{padding:9px 11px}
 <script>
 (function(){
 'use strict';
-var peer=null,localStream=null,currentCall=null,pendingCall=null,myCode=null,started=0,timerId=null,audioOn=true,videoOn=true,callMsgTimer=null;
+var peer=null,localStream=null,currentCall=null,pendingCall=null,myCode=null,started=0,timerId=null,audioOn=true,videoOn=true;
 var $=function(id){return document.getElementById(id)};
 function msg(t,err){$('lobby-status').textContent=t||'';$('lobby-status').className=err?'error':''}
 function code(){var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';for(var i=0;i<6;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
 function peerState(c,t){$('peer-dot').className='dot '+c;$('peer-status').textContent=t}
-function callMsg(t,persistent){clearTimeout(callMsgTimer);$('call-message').textContent=t;$('call-message').classList.remove('hidden');if(!persistent){callMsgTimer=setTimeout(function(){$('call-message').classList.add('hidden')},6500)}}
+function callMsg(t){$('call-message').textContent=t;$('call-message').classList.remove('hidden');setTimeout(function(){$('call-message').classList.add('hidden')},4500)}
 function play(v){if(!v.srcObject)return;var p=v.play();if(p&&p.catch)p.catch(function(){callMsg('Presioná OK o ENTER para reproducir el video.')})}
 function media(){
  return new Promise(function(resolve,reject){
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){reject(new Error('Este navegador no permite acceder a cámara y micrófono (getUserMedia).'));return}
-  var done=false,timeout=setTimeout(function(){if(!done){done=true;reject(new Error('La cámara tardó demasiado. Revisá el USB y los permisos del televisor.'))}},15000);
-  navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720}},audio:true}).then(function(s){if(done){s.getTracks().forEach(function(t){t.stop()});return}done=true;clearTimeout(timeout);resolve(s)}).catch(function(first){
-   navigator.mediaDevices.getUserMedia({video:true,audio:false}).then(function(s){if(done){s.getTracks().forEach(function(t){t.stop()});return}done=true;clearTimeout(timeout);callMsg('Cámara disponible, pero no se activó el micrófono.');resolve(s)}).catch(function(second){if(done)return;done=true;clearTimeout(timeout);reject(new Error('No se pudo abrir la cámara: '+(second.message||first.message||'verificá permisos y conexión USB.')))})
-  })
- })
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){reject(new Error('Este navegador no permite acceder a la cámara (getUserMedia).'));return}
+  var finished=false,videoStream=null,audioStream=null,videoTimer=null,audioTimer=null;
+  function stopTracks(stream){if(stream){stream.getTracks().forEach(function(t){try{t.stop()}catch(e){}})}}
+  function finishWithVideo(audioMessage){
+   if(finished)return;
+   finished=true;
+   clearTimeout(videoTimer);clearTimeout(audioTimer);
+   if(audioStream){audioStream.getAudioTracks().forEach(function(t){videoStream.addTrack(t)})}
+   if(audioMessage)callMsg(audioMessage);
+   resolve(videoStream);
+  }
+  videoTimer=setTimeout(function(){
+   if(finished)return;
+   finished=true;
+   reject(new Error('La webcam no respondió dentro de 10 segundos. Revisá que esté conectada al USB y que el navegador del televisor tenga permiso para usar la cámara.'));
+  },10000);
+  /* Primero probamos la webcam sola: algunos navegadores de TV se bloquean al pedir audio y video juntos. */
+  navigator.mediaDevices.getUserMedia({video:true,audio:false}).then(function(vs){
+   if(finished){stopTracks(vs);return}
+   videoStream=vs;clearTimeout(videoTimer);
+   /* El video ya está disponible. El micrófono se solicita por separado y no debe impedir la llamada. */
+   audioTimer=setTimeout(function(){
+    if(!finished)finishWithVideo('Webcam activa; el micrófono tardó demasiado y la llamada continuará sin audio local.');
+   },5000);
+   navigator.mediaDevices.getUserMedia({video:false,audio:true}).then(function(as){
+    if(finished){stopTracks(as);return}
+    audioStream=as;finishWithVideo('Cámara y micrófono disponibles.');
+   }).catch(function(){
+    if(!finished)finishWithVideo('Webcam activa, pero no se pudo abrir el micrófono.');
+   });
+  }).catch(function(err){
+   if(finished)return;
+   finished=true;clearTimeout(videoTimer);clearTimeout(audioTimer);
+   reject(new Error('No se pudo abrir la webcam: '+(err&&err.message?err.message:'el navegador no concedió acceso. Revisá los permisos del televisor y la conexión USB.')));
+  });
+ });
 }
 function setLocal(s){localStream=s;$('local-video').srcObject=s;play($('local-video'));audioOn=s.getAudioTracks().length>0;videoOn=s.getVideoTracks().length>0;controls()}
 function stopLocal(){if(localStream){localStream.getTracks().forEach(function(t){t.stop()});localStream=null}$('local-video').srcObject=null}
@@ -110,7 +103,7 @@ function setup(c){
 }
 function answer(){
  var c=pendingCall;if(!c)return;pendingCall=null;$('incoming').classList.remove('active');msg('Solicitando acceso a cámara y micrófono…');
- media().then(function(s){setLocal(s);c.answer(s);setup(c);msg('')}).catch(function(e){$('device-status').textContent='Sin cámara local';$('device-hint').textContent=e.message;try{c.answer();setup(c);msg('Atendiste sin cámara local. '+e.message,true);callMsg('Cámara del televisor: '+e.message,true)}catch(x){msg('No se pudo atender: '+x.message,true);c.close()}});
+ media().then(function(s){setLocal(s);c.answer(s);setup(c);msg('')}).catch(function(e){$('device-status').textContent='Sin cámara local';$('device-hint').textContent=e.message;try{c.answer();setup(c);msg('Atendiste sin cámara local. '+e.message,true)}catch(x){msg('No se pudo atender: '+x.message,true);c.close()}});
 }
 function dial(){
  var id=$('remote-code-input').value.trim().toUpperCase();if(!id){msg('Ingresá el código.',true);return}if(id.length!==6){msg('El código debe tener 6 caracteres.',true);return}if(id===myCode){msg('Ese es tu propio código.',true);return}if(!peer||!peer.open){msg('Esperá a que se conecte el servidor.',true);return}
@@ -119,7 +112,7 @@ function dial(){
 }
 function finish(closeIt){
  clearInterval(timerId);var c=currentCall;currentCall=null;if(closeIt&&c){try{c.close()}catch(e){}}
- stopLocal();var rv=$('remote-video');if(rv.srcObject){try{rv.srcObject.getTracks().forEach(function(t){t.stop()})}catch(e){}}rv.srcObject=null;$('no-remote').style.display='flex';$('callview').classList.remove('active');$('incoming').classList.remove('active');$('lobby').style.display='flex';$('call-btn').disabled=false;started=0;$('call-timer').textContent='En llamada · 0:00';audioOn=true;videoOn=true;controls();clearTimeout(callMsgTimer);$('call-message').classList.add('hidden');msg('Llamada finalizada.');$('remote-code-input').focus();window.scrollTo(0,0)
+ stopLocal();var rv=$('remote-video');if(rv.srcObject){try{rv.srcObject.getTracks().forEach(function(t){t.stop()})}catch(e){}}rv.srcObject=null;$('no-remote').style.display='flex';$('callview').classList.remove('active');$('incoming').classList.remove('active');$('lobby').style.display='flex';$('call-btn').disabled=false;started=0;$('call-timer').textContent='En llamada · 0:00';audioOn=true;videoOn=true;controls();msg('Llamada finalizada.');$('remote-code-input').focus()
 }
 function tick(){if(!started)return;var s=Math.floor((Date.now()-started)/1000),m=Math.floor(s/60);$('call-timer').textContent='En llamada · '+m+':'+(s%60<10?'0':'')+(s%60)}
 function controls(){ $('btn-cam').classList.toggle('off',!videoOn);$('btn-mic').classList.toggle('off',!audioOn);$('btn-cam').textContent=videoOn?'📷':'🚫';$('btn-mic').textContent=audioOn?'🎙️':'🔇'}
