@@ -6,12 +6,12 @@
 <style>
 :root{color-scheme:dark;--bg:#090d18;--panel:#121c2e;--panel2:#0d1524;--line:#2a3852;--fg:#f2f6ff;--muted:#9aa9c2;--blue:#347cf6;--blue2:#65a1ff;--red:#ed5268;--green:#43d99a;font-family:Arial,Helvetica,sans-serif}
 *{box-sizing:border-box}
-html,body{width:100%;height:100%;min-height:0;margin:0;background:var(--bg);color:var(--fg);overflow:hidden}
+html,body{width:100%;min-height:100%;height:auto;margin:0;background:var(--bg);color:var(--fg);overflow-x:hidden;overflow-y:auto}
 button,input{font:inherit}button{cursor:pointer}button:focus,input:focus{outline:3px solid #8bb7ff;outline-offset:3px}
-#lobby{width:100%;height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:clamp(12px,2vh,24px) clamp(18px,4vw,56px);overflow:hidden;gap:0}
+#lobby{width:100%;min-height:100vh;height:auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:clamp(12px,2vh,24px) clamp(18px,4vw,56px);overflow:visible;gap:0}
 .top{width:min(100%,1100px);display:flex;justify-content:space-between;align-items:center;margin-bottom:clamp(12px,2vh,22px);gap:16px}.brand{font-weight:800;letter-spacing:.1em;font-size:clamp(1rem,1.5vw,1.35rem);display:flex;align-items:center}.mark{display:inline-grid;place-items:center;background:var(--blue);border-radius:10px;width:clamp(34px,3.4vw,44px);height:clamp(34px,3.4vw,44px);margin-right:10px}.connection{display:flex;align-items:center;border:1px solid var(--line);border-radius:30px;padding:8px 13px;color:var(--muted);background:#111b2b;font-size:clamp(.78rem,1vw,.95rem);white-space:nowrap}.dot{width:9px;height:9px;flex:0 0 9px;border-radius:50%;background:#77849a;margin-right:9px}.dot.ready{background:var(--green);box-shadow:0 0 8px var(--green)}.dot.waiting{background:var(--blue2);animation:pulse 1.2s infinite}.dot.error{background:var(--red)}@keyframes pulse{50%{opacity:.35}}
 .hero{text-align:center;margin-bottom:clamp(12px,2vh,22px)}.hero h1{font-size:clamp(1.55rem,2.6vw,2.35rem);margin:0 0 6px}.hero p{margin:0;color:var(--muted);font-size:clamp(.88rem,1.15vw,1rem)}
-.card{width:min(100%,1040px);max-height:calc(100% - 125px);padding:clamp(16px,2vw,26px);border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#152139,#101827);box-shadow:0 18px 55px #0005;overflow:hidden}
+.card{width:min(100%,1040px);max-height:none;padding:clamp(16px,2vw,26px);border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#152139,#101827);box-shadow:0 18px 55px #0005;overflow:visible}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,1.5vw,18px)}.panel{background:var(--panel2);border:1px solid var(--line);border-radius:15px;padding:clamp(14px,1.6vw,21px);min-width:0}.label{font-size:clamp(.72rem,.85vw,.82rem);color:var(--muted);font-weight:bold;letter-spacing:.1em;text-transform:uppercase;margin-bottom:9px}.code{font-size:clamp(2rem,4.2vw,3.1rem);font-weight:800;letter-spacing:.16em;color:var(--blue2);white-space:nowrap}.hint{font-size:clamp(.8rem,.95vw,.9rem);color:var(--muted);line-height:1.4;margin-top:7px}.state{font-size:clamp(1rem,1.25vw,1.15rem);font-weight:bold;color:var(--green)}
 .form{display:flex;margin-top:10px;min-width:0}input{min-width:0;flex:1;background:#080e19;border:1px solid #34435e;border-radius:10px 0 0 10px;padding:12px 14px;color:white;font-size:clamp(.9rem,1.2vw,1.1rem);letter-spacing:.12em;text-transform:uppercase}.btn{border:0;border-radius:10px;background:var(--blue);color:white;font-weight:bold;padding:12px clamp(16px,2vw,24px);font-size:clamp(.9rem,1.05vw,1rem)}.btn:disabled{opacity:.4;cursor:not-allowed}.form .btn{border-radius:0 10px 10px 0}.danger{background:var(--red)}#lobby-status{min-height:20px;margin-top:12px;color:#c5d4eb;font-size:clamp(.8rem,.95vw,.9rem);line-height:1.35}#lobby-status.error{color:#ff8798}
 #incoming{display:none;position:fixed;inset:0;z-index:20;background:#050911f5;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px}#incoming.active{display:flex}.incoming-icon{font-size:clamp(3rem,7vw,5rem);margin-bottom:12px}#incoming h2{font-size:clamp(1.7rem,3.5vw,2.7rem);margin:0 0 10px}#incoming-from{color:var(--muted);font-size:1.05rem;margin-bottom:20px}.actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}.actions button{min-width:150px;margin:0;padding:14px 22px;font-size:1rem}
@@ -20,7 +20,7 @@ button,input{font:inherit}button{cursor:pointer}button:focus,input:focus{outline
 #local-video{position:absolute;right:clamp(14px,2vw,26px);top:clamp(14px,2vw,26px);width:clamp(130px,17vw,240px);aspect-ratio:4/3;object-fit:cover;border:2px solid #ffffffbb;border-radius:13px;background:#111;z-index:2}
 .calltop{position:absolute;top:clamp(14px,2vw,26px);left:clamp(14px,2vw,26px);z-index:3;background:#101827dd;border:1px solid #ffffff25;border-radius:30px;padding:10px 15px;display:flex;align-items:center;font-size:.95rem}.callbottom{position:absolute;bottom:clamp(14px,2vw,24px);left:0;right:0;display:flex;justify-content:center;z-index:4}.controls{display:flex;align-items:center;background:#101827ef;border:1px solid #ffffff24;border-radius:18px;padding:10px}.ctrl{width:clamp(54px,5.5vw,66px);height:clamp(54px,5.5vw,66px);border:0;border-radius:14px;background:#293750;color:white;font-size:1.45rem;margin:0 6px}.ctrl.off{background:#59303b}.ctrl.end{background:var(--red);width:clamp(62px,6.2vw,74px)}.callmsg{position:absolute;top:80px;left:50%;transform:translateX(-50%);z-index:5;background:#111b2b;padding:10px 16px;border-radius:10px;max-width:80%;text-align:center}.hidden{display:none!important}
 @media(max-width:900px){.card{width:min(100%,760px)}.top{margin-bottom:12px}.hero{margin-bottom:12px}}
-@media(max-width:700px){#lobby{justify-content:flex-start;padding:16px 14px;overflow:auto}.card{max-height:none}.grid{grid-template-columns:1fr}.panel{padding:14px}.hero{margin-bottom:14px}#local-video{width:112px;right:12px;top:12px}.calltop{left:12px;top:12px;padding:9px 13px}.callbottom{bottom:12px}.controls{padding:7px}.ctrl{width:49px;height:49px;font-size:1.2rem;margin:0 3px}.ctrl.end{width:56px}}
+@media(max-width:700px){#lobby{justify-content:flex-start;padding:16px 14px;overflow:visible}.card{max-height:none}.grid{grid-template-columns:1fr}.panel{padding:14px}.hero{margin-bottom:14px}#local-video{width:112px;right:12px;top:12px}.calltop{left:12px;top:12px;padding:9px 13px}.callbottom{bottom:12px}.controls{padding:7px}.ctrl{width:49px;height:49px;font-size:1.2rem;margin:0 3px}.ctrl.end{width:56px}}
 @media(max-height:800px) and (min-width:701px){#lobby{padding-top:10px;padding-bottom:10px}.top{margin-bottom:10px}.hero{margin-bottom:10px}.hero h1{font-size:clamp(1.4rem,2.3vw,2rem)}.card{padding:14px}.panel{padding:12px}.code{font-size:clamp(1.8rem,3.6vw,2.6rem)}.hint{margin-top:5px}.label{margin-bottom:6px}}
 </style></head><body>
 <main id="lobby">
@@ -44,40 +44,39 @@ function callMsg(t){$('call-message').textContent=t;$('call-message').classList.
 function play(v){if(!v.srcObject)return;var p=v.play();if(p&&p.catch)p.catch(function(){callMsg('Presioná OK o ENTER para reproducir el video.')})}
 function media(){
  return new Promise(function(resolve,reject){
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){reject(new Error('Este navegador no permite acceder a la cámara (getUserMedia).'));return}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){reject(new Error('Este navegador no ofrece acceso a la cámara (getUserMedia).'));return}
   var finished=false,videoStream=null,audioStream=null,videoTimer=null,audioTimer=null;
   function stopTracks(stream){if(stream){stream.getTracks().forEach(function(t){try{t.stop()}catch(e){}})}}
   function finishWithVideo(audioMessage){
    if(finished)return;
-   finished=true;
-   clearTimeout(videoTimer);clearTimeout(audioTimer);
-   if(audioStream){audioStream.getAudioTracks().forEach(function(t){videoStream.addTrack(t)})}
+   finished=true;clearTimeout(videoTimer);clearTimeout(audioTimer);
+   if(audioStream&&videoStream){audioStream.getAudioTracks().forEach(function(t){videoStream.addTrack(t)})}
    if(audioMessage)callMsg(audioMessage);
    resolve(videoStream);
   }
   videoTimer=setTimeout(function(){
    if(finished)return;
    finished=true;
-   reject(new Error('La webcam no respondió dentro de 10 segundos. Revisá que esté conectada al USB y que el navegador del televisor tenga permiso para usar la cámara.'));
+   var detail='La solicitud de webcam quedó pendiente y no respondió en 10 segundos.';
+   var diagnostic='No se pudo consultar la lista de dispositivos.';
+   var enumPromise=(navigator.mediaDevices.enumerateDevices?navigator.mediaDevices.enumerateDevices():Promise.reject(new Error('enumerateDevices no disponible')));
+   Promise.race([enumPromise,new Promise(function(_,r){setTimeout(function(){r(new Error('timeout'))},1800)})]).then(function(devices){
+    var cams=devices.filter(function(d){return d.kind==='videoinput'}).length;
+    diagnostic=cams?'El navegador detecta '+cams+' dispositivo(s) de video, pero no entrega la cámara.':'El navegador no informa ningún dispositivo de video.';
+   }).catch(function(){}).then(function(){reject(new Error(detail+' '+diagnostic+' Revisaremos permisos y compatibilidad del navegador.'))});
   },10000);
-  /* Primero probamos la webcam sola: algunos navegadores de TV se bloquean al pedir audio y video juntos. */
+  /* Se solicita primero sólo video para que un problema del micrófono no bloquee la webcam. */
   navigator.mediaDevices.getUserMedia({video:true,audio:false}).then(function(vs){
    if(finished){stopTracks(vs);return}
    videoStream=vs;clearTimeout(videoTimer);
-   /* El video ya está disponible. El micrófono se solicita por separado y no debe impedir la llamada. */
-   audioTimer=setTimeout(function(){
-    if(!finished)finishWithVideo('Webcam activa; el micrófono tardó demasiado y la llamada continuará sin audio local.');
-   },5000);
+   audioTimer=setTimeout(function(){if(!finished)finishWithVideo('Webcam activa; el micrófono no respondió. La llamada seguirá sin audio local.')},5000);
    navigator.mediaDevices.getUserMedia({video:false,audio:true}).then(function(as){
     if(finished){stopTracks(as);return}
     audioStream=as;finishWithVideo('Cámara y micrófono disponibles.');
-   }).catch(function(){
-    if(!finished)finishWithVideo('Webcam activa, pero no se pudo abrir el micrófono.');
-   });
+   }).catch(function(){if(!finished)finishWithVideo('Webcam activa, pero el micrófono no pudo abrirse.')});
   }).catch(function(err){
-   if(finished)return;
-   finished=true;clearTimeout(videoTimer);clearTimeout(audioTimer);
-   reject(new Error('No se pudo abrir la webcam: '+(err&&err.message?err.message:'el navegador no concedió acceso. Revisá los permisos del televisor y la conexión USB.')));
+   if(finished)return;finished=true;clearTimeout(videoTimer);clearTimeout(audioTimer);
+   reject(new Error('El navegador rechazó la webcam: '+(err&&err.name?err.name+': ':'')+(err&&err.message?err.message:'sin detalle')+'.'));
   });
  });
 }
