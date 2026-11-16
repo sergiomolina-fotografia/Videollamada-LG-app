@@ -1,0 +1,18 @@
+
+{
+  "id": "com.sergio.lgvideocall",
+  "version": "1.0.0",
+  "vendor": "Sergio",
+  "type": "web",
+  "main": "index.html",
+  "title": "LG Video Call",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "resolution": "1920x1080",
+  "allowAudioCapture": true,
+  "allowVideoCapture": true,
+  "useCamera": true,
+  "useGraphicCamera": true,
+  "handlesRelaunch": false,
+  "disableBackHistoryAPI": false
+}
