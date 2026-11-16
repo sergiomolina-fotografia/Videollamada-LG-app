@@ -37,6 +37,28 @@ button,input{font:inherit}button{cursor:pointer}button:focus,input:focus{outline
 @media(max-width:900px){.card{width:min(100%,760px)}.top{margin-bottom:12px}.hero{margin-bottom:12px}}
 @media(max-width:700px){#lobby{justify-content:flex-start;padding:16px 14px;overflow:auto}.card{max-height:none}.grid{grid-template-columns:1fr}.panel{padding:14px}.hero{margin-bottom:14px}#local-video{width:112px;right:12px;top:12px}.calltop{left:12px;top:12px;padding:9px 13px}.callbottom{bottom:12px}.controls{padding:7px}.ctrl{width:49px;height:49px;font-size:1.2rem;margin:0 3px}.ctrl.end{width:56px}}
 @media(max-height:800px) and (min-width:701px){#lobby{padding-top:10px;padding-bottom:10px}.top{margin-bottom:10px}.hero{margin-bottom:10px}.hero h1{font-size:clamp(1.4rem,2.3vw,2rem)}.card{padding:14px}.panel{padding:12px}.code{font-size:clamp(1.8rem,3.6vw,2.6rem)}.hint{margin-top:5px}.label{margin-bottom:6px}}
+
+/* Ajustes de pantalla para Smart TV: compacto, pero desplazable si hace falta. */
+html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
+body{min-height:100vh}
+#lobby{height:auto;min-height:100vh;justify-content:flex-start;overflow:visible;padding:12px clamp(16px,3vw,40px) 22px}
+.top{margin-bottom:10px}
+.hero{margin-bottom:10px}
+.hero h1{font-size:clamp(1.35rem,2vw,2rem);margin-bottom:4px}
+.hero p{font-size:clamp(.82rem,1vw,.95rem)}
+.card{max-height:none;overflow:visible;width:min(100%,980px);padding:14px}
+.grid{gap:10px}
+.panel{padding:12px}
+.card>.panel{margin-top:10px!important}
+.label{margin-bottom:5px}
+.code{font-size:clamp(1.8rem,3vw,2.5rem)}
+.hint{font-size:.82rem;margin-top:5px}
+.form{margin-top:7px}
+input{padding:9px 11px}
+.btn{padding:9px 16px}
+#lobby-status{margin-top:7px}
+.callmsg{max-width:min(88%,900px);line-height:1.4;font-size:clamp(.9rem,1.3vw,1.1rem)}
+@media(max-width:700px){#lobby{padding:14px;overflow:visible}.card{max-height:none}.grid{grid-template-columns:1fr}}
 </style></head><body>
 <main id="lobby">
 <header class="top"><div class="brand"><span class="mark">▶</span>LG VIDEO CALL</div><div class="connection"><span class="dot waiting" id="peer-dot"></span><span id="peer-status">Conectando…</span></div></header>
@@ -50,12 +72,12 @@ button,input{font:inherit}button{cursor:pointer}button:focus,input:focus{outline
 <script>
 (function(){
 'use strict';
-var peer=null,localStream=null,currentCall=null,pendingCall=null,myCode=null,started=0,timerId=null,audioOn=true,videoOn=true;
+var peer=null,localStream=null,currentCall=null,pendingCall=null,myCode=null,started=0,timerId=null,audioOn=true,videoOn=true,callMsgTimer=null;
 var $=function(id){return document.getElementById(id)};
 function msg(t,err){$('lobby-status').textContent=t||'';$('lobby-status').className=err?'error':''}
 function code(){var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';for(var i=0;i<6;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
 function peerState(c,t){$('peer-dot').className='dot '+c;$('peer-status').textContent=t}
-function callMsg(t){$('call-message').textContent=t;$('call-message').classList.remove('hidden');setTimeout(function(){$('call-message').classList.add('hidden')},4500)}
+function callMsg(t,persistent){clearTimeout(callMsgTimer);$('call-message').textContent=t;$('call-message').classList.remove('hidden');if(!persistent){callMsgTimer=setTimeout(function(){$('call-message').classList.add('hidden')},6500)}}
 function play(v){if(!v.srcObject)return;var p=v.play();if(p&&p.catch)p.catch(function(){callMsg('Presioná OK o ENTER para reproducir el video.')})}
 function media(){
  return new Promise(function(resolve,reject){
@@ -88,7 +110,7 @@ function setup(c){
 }
 function answer(){
  var c=pendingCall;if(!c)return;pendingCall=null;$('incoming').classList.remove('active');msg('Solicitando acceso a cámara y micrófono…');
- media().then(function(s){setLocal(s);c.answer(s);setup(c);msg('')}).catch(function(e){$('device-status').textContent='Sin cámara local';$('device-hint').textContent=e.message;try{c.answer();setup(c);msg('Atendiste sin cámara local. '+e.message,true)}catch(x){msg('No se pudo atender: '+x.message,true);c.close()}});
+ media().then(function(s){setLocal(s);c.answer(s);setup(c);msg('')}).catch(function(e){$('device-status').textContent='Sin cámara local';$('device-hint').textContent=e.message;try{c.answer();setup(c);msg('Atendiste sin cámara local. '+e.message,true);callMsg('Cámara del televisor: '+e.message,true)}catch(x){msg('No se pudo atender: '+x.message,true);c.close()}});
 }
 function dial(){
  var id=$('remote-code-input').value.trim().toUpperCase();if(!id){msg('Ingresá el código.',true);return}if(id.length!==6){msg('El código debe tener 6 caracteres.',true);return}if(id===myCode){msg('Ese es tu propio código.',true);return}if(!peer||!peer.open){msg('Esperá a que se conecte el servidor.',true);return}
@@ -97,7 +119,7 @@ function dial(){
 }
 function finish(closeIt){
  clearInterval(timerId);var c=currentCall;currentCall=null;if(closeIt&&c){try{c.close()}catch(e){}}
- stopLocal();var rv=$('remote-video');if(rv.srcObject){try{rv.srcObject.getTracks().forEach(function(t){t.stop()})}catch(e){}}rv.srcObject=null;$('no-remote').style.display='flex';$('callview').classList.remove('active');$('incoming').classList.remove('active');$('lobby').style.display='flex';$('call-btn').disabled=false;started=0;$('call-timer').textContent='En llamada · 0:00';audioOn=true;videoOn=true;controls();msg('Llamada finalizada.');$('remote-code-input').focus()
+ stopLocal();var rv=$('remote-video');if(rv.srcObject){try{rv.srcObject.getTracks().forEach(function(t){t.stop()})}catch(e){}}rv.srcObject=null;$('no-remote').style.display='flex';$('callview').classList.remove('active');$('incoming').classList.remove('active');$('lobby').style.display='flex';$('call-btn').disabled=false;started=0;$('call-timer').textContent='En llamada · 0:00';audioOn=true;videoOn=true;controls();clearTimeout(callMsgTimer);$('call-message').classList.add('hidden');msg('Llamada finalizada.');$('remote-code-input').focus();window.scrollTo(0,0)
 }
 function tick(){if(!started)return;var s=Math.floor((Date.now()-started)/1000),m=Math.floor(s/60);$('call-timer').textContent='En llamada · '+m+':'+(s%60<10?'0':'')+(s%60)}
 function controls(){ $('btn-cam').classList.toggle('off',!videoOn);$('btn-mic').classList.toggle('off',!audioOn);$('btn-cam').textContent=videoOn?'📷':'🚫';$('btn-mic').textContent=audioOn?'🎙️':'🔇'}
