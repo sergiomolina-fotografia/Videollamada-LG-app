@@ -212,3 +212,46 @@ Hipótesis todavía abiertas:
 - Conservar copias de seguridad antes de cualquier modificación justificada.
 
 Objetivo final: ejecutar la aplicación original LG Video Call como una aplicación funcional de webOS, utilizando la webcam y el micrófono USB del televisor y conservando la comunicación WebRTC con dispositivos móviles.
+
+11. Actualización y funcionamiento confirmado en webOS — 17 de noviembre de 2026
+
+Objetivos alcanzados y estado operativo
+
+La aplicación LG Video Call (`com.sergio.lgvideocall`) se encuentra actualmente empaquetada, instalada y completamente funcional en webOS 6.x (televisor LG 50UP7750PSB), estableciendo videollamadas WebRTC bidireccionales con dispositivos móviles y ordenadores.
+
+1. Empaquetado formal webOS (.ipk)
+- Se corrigió la estructura de carpetas (`Assets/`), eliminando espacios finales incompatibles con sistemas de archivos Windows/NTFS.
+- Se incorporaron los iconos oficiales requeridos por webOS: `icon.png` (80×80 px) y `largeIcon.png` (130×130 px), generados a partir del diseño maestro.
+- Empaquetado limpio generado con `ares-package` (`com.sergio.lgvideocall_1.0.0_all.ipk`).
+
+2. Integración local de PeerJS 1.5.2
+- Se eliminó la dependencia externa del CDNJS en `index.html`.
+- Se incorporó la biblioteca localmente en `Assets/js/peerjs.min.js`.
+- Corrección de sintaxis para Chromium 87: Se transpilaron los operadores de encadenamiento opcional (`?.`), incompatibles con el motor V8 de webOS 6, garantizando la carga e inicialización inmediata de `window.Peer`.
+
+3. Corrección de interfaz y estilos para webOS 6 (Chromium 87)
+- Sustitución de `inset: 0` y `aspect-ratio: 4/3` por posicionamiento explícito en pantalla completa (`top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%`) y dimensiones fijas para la vista miniatura (`240×180 px`).
+- Esto resolvió el problema del colapso de pantalla (pantalla negra) y aseguró el renderizado a pantalla completa tanto del diálogo modal de llamada entrante como de la vista de llamada activa.
+
+4. Detección y alerta sonora de llamadas entrantes
+- El modal de llamada entrante cubre la pantalla en formato 1920×1080 con foco automático en "Atender llamada".
+- Se integró un sintetizador de tono de llamada nativo mediante Web Audio API, emitiendo una señal sonora audible en el televisor hasta que la llamada sea atendida o rechazada.
+
+5. Enrutamiento y salida de audio en el televisor
+- Se implementó una arquitectura de audio en tres vías para asegurar la salida por los altavoces del TV:
+  1. Elemento `<video>` con volumen al 100%.
+  2. Elemento `<audio id="remote-audio" autoplay playsinline>` dedicado.
+  3. Tubería directa Web Audio API (`AudioContext.createMediaStreamSource`), decodificando paquetes Opus en software y enviándolos directo a `AudioContext.destination` sin pasar por bloqueos de reproducción o dependencias del reproductor de video de webOS.
+- Se añadió reactivación de audio ante cualquier interacción con el control remoto del TV.
+
+6. Corrección de proporción y aspecto de video (fitRemoteVideo)
+- Se desarrolló el algoritmo `fitRemoteVideo()`, que calcula dinámicamente la escala geométrica sin distorsión a partir de `videoWidth` y `videoHeight` de la cámara entrante.
+- Si el interlocutor utiliza el celular en vertical, la imagen se centra en el televisor con barras laterales limpias sin estirarse.
+- Si el celular rota a formato horizontal (apaisado), el televisor detecta el evento de redimensionado al instante y expande el video a formato panorámico 16:9 real sin deformación.
+
+7. Conectividad y NAT transversal
+- Se integraron servidores TURN globales (PeerJS y OpenRelay) junto a los servidores STUN de Google, permitiendo la comunicación P2P entre el televisor en la red local y dispositivos en redes externas o datos móviles (4G/5G).
+
+8. Estado del micrófono USB en el televisor
+- Confirmado: El hardware USB de la cámara (XSQUL Gaming XW100) es reconocido para video (`/dev/video0`), pero su interfaz de audio USB integrada presenta incompatibilidad a nivel de kernel/controlador ALSA en este modelo de televisor.
+- La aplicación aísla correctamente la captura de la webcam de modo que la falta de micrófono en el TV no impida emitir video fluido y recibir el audio entrante con total normalidad.
