@@ -255,3 +255,22 @@ La aplicación LG Video Call (`com.sergio.lgvideocall`) se encuentra actualmente
 8. Estado del micrófono USB en el televisor
 - Confirmado: El hardware USB de la cámara (XSQUL Gaming XW100) es reconocido para video (`/dev/video0`), pero su interfaz de audio USB integrada presenta incompatibilidad a nivel de kernel/controlador ALSA en este modelo de televisor.
 - La aplicación aísla correctamente la captura de la webcam de modo que la falta de micrófono en el TV no impida emitir video fluido y recibir el audio entrante con total normalidad.
+
+12. Conferencia Multi-Participante (Fase 1: Malla P2P hasta 4 integrantes)
+
+- **Capacidad ampliada:** El TV y los clientes web gestionan conferencias grupales en malla P2P de hasta 4 participantes simultáneos (límite óptimo para la decodificación por hardware del chip ARMv7 del televisor).
+- **Cuadrícula dinámica inteligente (`#video-grid` + `fitCellVideo`):**
+  - 1 participante remoto: Ocupa el 100% de la pantalla.
+  - 2 participantes remotos: División lateral 50% / 100% en pantallas horizontales (TV/PC) o apilado vertical 100% / 50% en celulares verticales.
+  - 3 participantes remotos: 2 superiores al 50% / 50% y 1 inferior centrado al 100% / 50%.
+  - 4 participantes remotos: Cuadrícula simétrica 2×2 (50% / 50% cada cuadrante).
+  - Ajuste geométrico automático por celda (`fitCellVideo`) para conservar proporciones sin compresión tanto en TV (Chromium 79 WAM) como en navegadores móviles, con insignia `Contacto [ID]`.
+- **Pool de Audio HTML5 Multicanal (`remote-audio-0..2`) y desbloqueo de reproducción:**
+  - En Chromium 79 (webOS WAM), `AudioContext.createMediaStreamSource` sobre streams remotos WebRTC produce silencio si no existe un sink `<audio>`, y `<video>` puede silenciar pistas Opus; por ello cada interlocutor remoto se asigna a una etiqueta dedicada `<audio autoplay playsinline>` de un pool pre-inicializado en el DOM y desbloqueado al pulsar "Atender" o "Llamar".
+  - En móviles y PC (fuera del TV), el `<video>` remoto se silencia localmente (`muted = true`) mientras el `<audio>` asignado reproduce la voz con volumen al 100%, evitando eco doble y bloqueos de autoplay.
+  - En dispositivos no-TV (`!isTV`), `getUserMedia` solicita `{video: true, audio: true}` juntos en una sola llamada para mantener sincronización A/V y cancelación de eco (AEC) por hardware, manteniendo en el TV la captura separada para aislar el fallo del micrófono USB.
+- **Protocolo de Señalización en Malla (`DataConnection` + `PEER_LIST`):**
+  - Todos los participantes intercambian periódicamente la lista activa de nodos (`PEER_LIST`) y negocian automáticamente llamadas directas en malla (`metadata: { mesh: true }`) con `offerToReceiveAudio: true` y `offerToReceiveVideo: true`, permitiendo que todos los clientes (TV y celulares) se vean y escuchen en cuadrícula compartida.
+- **Gestión de llamadas entrantes en conferencia:**
+  - Si una llamada entra mientras ya se está en una reunión, se muestra el diálogo modal "Nuevo participante" con el código del solicitante y contador de capacidad (ej. `3/4`). Al aceptar, se integra a toda la malla sin interrumpir la reunión en curso.
+

@@ -14,13 +14,17 @@ button,input{font:inherit}button{cursor:pointer}button:focus,input:focus{outline
 .card{width:min(100%,1040px);max-height:none;padding:clamp(16px,2vw,26px);border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#152139,#101827);box-shadow:0 18px 55px #0005;overflow:visible}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,1.5vw,18px)}.panel{background:var(--panel2);border:1px solid var(--line);border-radius:15px;padding:clamp(14px,1.6vw,21px);min-width:0}.label{font-size:clamp(.72rem,.85vw,.82rem);color:var(--muted);font-weight:bold;letter-spacing:.1em;text-transform:uppercase;margin-bottom:9px}.code{font-size:clamp(2rem,4.2vw,3.1rem);font-weight:800;letter-spacing:.16em;color:var(--blue2);white-space:nowrap}.hint{font-size:clamp(.8rem,.95vw,.9rem);color:var(--muted);line-height:1.4;margin-top:7px}.state{font-size:clamp(1rem,1.25vw,1.15rem);font-weight:bold;color:var(--green)}
 .form{display:flex;margin-top:10px;min-width:0}input{min-width:0;flex:1;background:#080e19;border:1px solid #34435e;border-radius:10px 0 0 10px;padding:12px 14px;color:white;font-size:clamp(.9rem,1.2vw,1.1rem);letter-spacing:.12em;text-transform:uppercase}.btn{border:0;border-radius:10px;background:var(--blue);color:white;font-weight:bold;padding:12px clamp(16px,2vw,24px);font-size:clamp(.9rem,1.05vw,1rem)}.btn:disabled{opacity:.4;cursor:not-allowed}.form .btn{border-radius:0 10px 10px 0}.danger{background:var(--red)}#lobby-status{min-height:20px;margin-top:12px;color:#c5d4eb;font-size:clamp(.8rem,.95vw,.9rem);line-height:1.35}#lobby-status.error{color:#ff8798}
-#incoming{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:20;background:#050911f5;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px;box-sizing:border-box}#incoming.active{display:flex!important}.incoming-icon{font-size:clamp(3rem,7vw,5rem);margin-bottom:12px}#incoming h2{font-size:clamp(1.7rem,3.5vw,2.7rem);margin:0 0 10px}#incoming-from{color:var(--muted);font-size:1.05rem;margin-bottom:20px}.actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}.actions button{min-width:150px;margin:0;padding:14px 22px;font-size:1rem}
-#callview{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;background:#000;z-index:10;overflow:hidden}#callview.active{display:block!important}#remote-video{position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:1}
+#incoming{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:30;background:#050911f5;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px;box-sizing:border-box}#incoming.active{display:flex!important}.incoming-icon{font-size:clamp(3rem,7vw,5rem);margin-bottom:12px}#incoming h2{font-size:clamp(1.7rem,3.5vw,2.7rem);margin:0 0 10px}#incoming-from{color:var(--muted);font-size:1.05rem;margin-bottom:20px}.actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}.actions button{min-width:150px;margin:0;padding:14px 22px;font-size:1rem}
+#callview{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;background:#000;z-index:10;overflow:hidden}#callview.active{display:block!important}
+#video-grid{position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%;display:flex;flex-wrap:wrap;align-items:stretch;justify-content:center;background:#000;z-index:1;overflow:hidden}
+.video-cell{position:relative;display:block;background:#000;overflow:hidden;box-sizing:border-box;border:1px solid #141b27}
+.video-cell video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
+.video-cell .peer-badge{position:absolute;bottom:12px;left:12px;background:rgba(16,24,39,0.85);color:#fff;padding:5px 12px;border-radius:8px;font-size:0.85rem;font-weight:bold;letter-spacing:0.05em;z-index:2;border:1px solid rgba(255,255,255,0.2)}
 #no-remote{position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;background:radial-gradient(ellipse,#18243a,#090d18 70%);z-index:2}#no-remote .camicon{font-size:4rem;margin-bottom:14px}#no-remote p{color:var(--muted)}
-#local-video{position:absolute;right:clamp(14px,2vw,26px);top:clamp(14px,2vw,26px);width:clamp(130px,17vw,240px);height:clamp(98px,12.75vw,180px);object-fit:cover;border:2px solid #ffffffbb;border-radius:13px;background:#111;z-index:3}
-.calltop{position:absolute;top:clamp(14px,2vw,26px);left:clamp(14px,2vw,26px);z-index:4;background:#101827dd;border:1px solid #ffffff25;border-radius:30px;padding:10px 15px;display:flex;align-items:center;font-size:.95rem}.callbottom{position:absolute;bottom:clamp(14px,2vw,24px);left:0;right:0;display:flex;justify-content:center;z-index:5}.controls{display:flex;align-items:center;background:#101827ef;border:1px solid #ffffff24;border-radius:18px;padding:10px}.ctrl{width:clamp(54px,5.5vw,66px);height:clamp(54px,5.5vw,66px);border:0;border-radius:14px;background:#293750;color:white;font-size:1.45rem;margin:0 6px}.ctrl.off{background:#59303b}.ctrl.end{background:var(--red);width:clamp(62px,6.2vw,74px)}.callmsg{position:absolute;top:80px;left:50%;transform:translateX(-50%);z-index:6;background:#111b2b;padding:10px 16px;border-radius:10px;max-width:80%;text-align:center}.hidden{display:none!important}
+#local-video{position:absolute;right:clamp(14px,2vw,26px);top:clamp(14px,2vw,26px);width:clamp(112px,16vw,240px);height:clamp(84px,12vw,180px);object-fit:cover;border:2px solid #ffffffbb;border-radius:13px;background:#111;z-index:15}
+.calltop{position:absolute;top:clamp(14px,2vw,26px);left:clamp(14px,2vw,26px);z-index:20;background:#101827dd;border:1px solid #ffffff25;border-radius:30px;padding:10px 15px;display:flex;align-items:center;font-size:.95rem}.callbottom{position:absolute;bottom:clamp(14px,2vw,24px);left:0;right:0;display:flex;justify-content:center;z-index:20}.controls{display:flex;align-items:center;background:#101827ef;border:1px solid #ffffff24;border-radius:18px;padding:10px}.ctrl{width:clamp(54px,5.5vw,66px);height:clamp(54px,5.5vw,66px);border:0;border-radius:14px;background:#293750;color:white;font-size:1.45rem;margin:0 6px}.ctrl.off{background:#59303b}.ctrl.end{background:var(--red);width:clamp(62px,6.2vw,74px)}.callmsg{position:absolute;top:80px;left:50%;transform:translateX(-50%);z-index:25;background:#111b2b;padding:10px 16px;border-radius:10px;max-width:80%;text-align:center}.hidden{display:none!important}
 @media(max-width:900px){.card{width:min(100%,760px)}.top{margin-bottom:12px}.hero{margin-bottom:12px}}
-@media(max-width:700px){#lobby{justify-content:flex-start;padding:16px 14px;overflow:visible}.card{max-height:none}.grid{grid-template-columns:1fr}.panel{padding:14px}.hero{margin-bottom:14px}#local-video{width:112px;height:84px;right:12px;top:12px}.calltop{left:12px;top:12px;padding:9px 13px}.callbottom{bottom:12px}.controls{padding:7px}.ctrl{width:49px;height:49px;font-size:1.2rem;margin:0 3px}.ctrl.end{width:56px}}
+@media(max-width:700px){#lobby{justify-content:flex-start;padding:16px 14px;overflow:visible}.card{max-height:none}.grid{grid-template-columns:1fr}.panel{padding:14px}.hero{margin-bottom:14px}#local-video{width:104px;height:78px;right:12px;top:12px}.calltop{left:12px;top:12px;padding:9px 13px;font-size:.82rem}.callbottom{bottom:12px}.controls{padding:7px}.ctrl{width:49px;height:49px;font-size:1.2rem;margin:0 3px}.ctrl.end{width:56px}}
 @media(max-height:800px) and (min-width:701px){#lobby{padding-top:10px;padding-bottom:10px}.top{margin-bottom:10px}.hero{margin-bottom:10px}.hero h1{font-size:clamp(1.4rem,2.3vw,2rem)}.card{padding:14px}.panel{padding:12px}.code{font-size:clamp(1.8rem,3.6vw,2.6rem)}.hint{margin-top:5px}.label{margin-bottom:6px}}
 </style></head><body>
 <main id="lobby">
@@ -30,23 +34,46 @@ button,input{font:inherit}button{cursor:pointer}button:focus,input:focus{outline
 <div class="panel"><div class="label">Tu código de sala</div><div class="code" id="my-code">------</div><div class="hint">Compartí este código con quien quieras llamar.</div></div>
 <div class="panel"><div class="label">Estado del dispositivo</div><div class="state" id="device-status">Preparando conexión…</div><div class="hint" id="device-hint">La cámara y el micrófono se solicitarán al iniciar o atender una llamada.</div></div></div>
 <div class="panel" style="margin-top:18px"><div class="label">Llamar a otro dispositivo</div><div class="form"><input id="remote-code-input" maxlength="6" placeholder="INGRESÁ EL CÓDIGO" autocomplete="off" aria-label="Código de la otra persona"><button class="btn" id="call-btn" disabled>Llamar</button></div><div id="lobby-status" role="status" aria-live="polite"></div></div></section></main>
-<section id="incoming" role="dialog" aria-modal="true"><div class="incoming-icon">📞</div><h2>Llamada entrante</h2><div id="incoming-from">Alguien quiere conectarse</div><div class="actions"><button class="btn danger" id="btn-reject">Rechazar</button><button class="btn" id="btn-answer">Atender llamada</button></div></section>
-<section id="callview"><video id="remote-video" autoplay playsinline webkit-playsinline></video><audio id="remote-audio" autoplay playsinline></audio><div id="no-remote"><div class="camicon">📹</div><strong>Conectando video…</strong><p>Esperando la imagen del otro dispositivo</p></div><video id="local-video" autoplay playsinline webkit-playsinline muted></video><div class="calltop"><span class="dot ready"></span><span id="call-timer">En llamada · 0:00</span></div><div id="call-message" class="callmsg hidden"></div><div class="callbottom"><div class="controls"><button class="ctrl" id="btn-cam" aria-label="Cámara">📷</button><button class="ctrl" id="btn-mic" aria-label="Micrófono">🎙️</button><button class="ctrl end" id="btn-end" aria-label="Finalizar llamada">📵</button><button class="ctrl" id="btn-fs" aria-label="Pantalla completa">⛶</button></div></div></section>
+<section id="incoming" role="dialog" aria-modal="true"><div class="incoming-icon">📞</div><h2 id="incoming-title">Llamada entrante</h2><div id="incoming-from">Alguien quiere conectarse</div><div class="actions"><button class="btn danger" id="btn-reject">Rechazar</button><button class="btn" id="btn-answer">Atender llamada</button></div></section>
+<section id="callview"><div id="video-grid"></div><audio id="remote-audio-0" autoplay playsinline></audio><audio id="remote-audio-1" autoplay playsinline></audio><audio id="remote-audio-2" autoplay playsinline></audio><div id="no-remote"><div class="camicon">📹</div><strong>Conectando video…</strong><p>Esperando la imagen del otro dispositivo</p></div><video id="local-video" autoplay playsinline webkit-playsinline muted></video><div class="calltop"><span class="dot ready"></span><span id="call-timer">En llamada · 0:00</span></div><div id="call-message" class="callmsg hidden"></div><div class="callbottom"><div class="controls"><button class="ctrl" id="btn-cam" aria-label="Cámara">📷</button><button class="ctrl" id="btn-mic" aria-label="Micrófono">🎙️</button><button class="ctrl end" id="btn-end" aria-label="Finalizar llamada">📵</button><button class="ctrl" id="btn-fs" aria-label="Pantalla completa">⛶</button></div></div></section>
 <script>
 (function(){
 'use strict';
-var peer=null,localStream=null,currentCall=null,pendingCall=null,myCode=null,started=0,timerId=null,audioOn=true,videoOn=true;
+var peer=null,localStream=null,activeCalls={},activeDataConns={},pendingCall=null,myCode=null,started=0,timerId=null,audioOn=true,videoOn=true;
+var MAX_PARTICIPANTS=4;
+var isTV=/Web0S|webOS|NetCast|SmartTV|WebAppManager/i.test(navigator.userAgent||'');
 var $=function(id){return document.getElementById(id)};
+var audioPool=[$('remote-audio-0'),$('remote-audio-1'),$('remote-audio-2')];
+var audioSlotOwner={};
+
 function msg(t,err){$('lobby-status').textContent=t||'';$('lobby-status').className=err?'error':''}
 function code(){var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';for(var i=0;i<6;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
 function peerState(c,t){$('peer-dot').className='dot '+c;$('peer-status').textContent=t}
 function callMsg(t){$('call-message').textContent=t;$('call-message').classList.remove('hidden');setTimeout(function(){$('call-message').classList.add('hidden')},4500)}
-function play(v){if(!v.srcObject)return;var p=v.play();if(p&&p.catch)p.catch(function(){callMsg('Presioná OK o ENTER para reproducir el video.')})}
+function play(v){if(!v||!v.srcObject)return;var p=v.play();if(p&&p.catch)p.catch(function(){callMsg('Tocá la pantalla o presioná OK para activar audio/video.')})}
+
 function media(){
  return new Promise(function(resolve,reject){
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){reject(new Error('Este navegador no ofrece acceso a la cámara (getUserMedia).'));return}
   var finished=false,videoStream=null,audioStream=null,videoTimer=null,audioTimer=null;
   function stopTracks(stream){if(stream){stream.getTracks().forEach(function(t){try{t.stop()}catch(e){}})}}
+
+  /* En celulares y PC, solicitar video+audio juntos asegura sincronización, AEC y un solo diálogo de permiso */
+  if(!isTV){
+   navigator.mediaDevices.getUserMedia({video:true,audio:true}).then(function(combined){
+    resolve(combined);
+   }).catch(function(){
+    navigator.mediaDevices.getUserMedia({video:true,audio:false}).then(function(vs){
+     callMsg('Cámara activa; el micrófono no está disponible o fue denegado.');
+     resolve(vs);
+    }).catch(function(err){
+     reject(new Error('El navegador rechazó cámara/micrófono: '+(err&&err.name?err.name+': ':'')+(err&&err.message?err.message:'sin detalle')+'.'));
+    });
+   });
+   return;
+  }
+
+  /* En LG webOS TV: solicitar cámara primero para que una falla del micrófono USB no bloquee la webcam */
   function finishWithVideo(audioMessage){
    if(finished)return;
    finished=true;clearTimeout(videoTimer);clearTimeout(audioTimer);
@@ -65,11 +92,10 @@ function media(){
     diagnostic=cams?'El navegador detecta '+cams+' dispositivo(s) de video, pero no entrega la cámara.':'El navegador no informa ningún dispositivo de video.';
    }).catch(function(){}).then(function(){reject(new Error(detail+' '+diagnostic+' Revisaremos permisos y compatibilidad del navegador.'))});
   },10000);
-  /* Se solicita primero sólo video para que un problema del micrófono no bloquee la webcam. */
   navigator.mediaDevices.getUserMedia({video:true,audio:false}).then(function(vs){
    if(finished){stopTracks(vs);return}
    videoStream=vs;clearTimeout(videoTimer);
-   audioTimer=setTimeout(function(){if(!finished)finishWithVideo('Webcam activa; el micrófono no respondió. La llamada seguirá sin audio local.')},5000);
+   audioTimer=setTimeout(function(){if(!finished)finishWithVideo('Webcam activa; el micrófono no respondió. La llamada seguirá sin audio local.')},4000);
    navigator.mediaDevices.getUserMedia({video:false,audio:true}).then(function(as){
     if(finished){stopTracks(as);return}
     audioStream=as;finishWithVideo('Cámara y micrófono disponibles.');
@@ -80,8 +106,10 @@ function media(){
   });
  });
 }
+
 function setLocal(s){localStream=s;$('local-video').srcObject=s;play($('local-video'));audioOn=s.getAudioTracks().length>0;videoOn=s.getVideoTracks().length>0;controls()}
 function stopLocal(){if(localStream){localStream.getTracks().forEach(function(t){t.stop()});localStream=null}$('local-video').srcObject=null}
+
 var ringAudioCtx=null,ringTimer=null;
 function startRing(){
  stopRing();
@@ -104,6 +132,380 @@ function stopRing(){
  if(ringTimer){clearInterval(ringTimer);ringTimer=null}
  if(ringAudioCtx){try{ringAudioCtx.close()}catch(e){}ringAudioCtx=null}
 }
+
+/* Audio HTML5 pool: desbloqueado por gesto del usuario y compatible con webOS Chrome 79 y móviles */
+function unlockAudioPool(){
+ for(var i=0;i<audioPool.length;i++){
+  var el=audioPool[i];
+  if(!el)continue;
+  el.muted=false;
+  el.volume=1.0;
+  if(!el.srcObject){
+   try{
+    var p=el.play();
+    if(p&&p.catch)p.catch(function(){});
+   }catch(e){}
+  }
+ }
+}
+
+function routeAudioForPeer(pid,stream){
+ var it=activeCalls[pid];
+ if(!it||!stream)return;
+ var aTracks=stream.getAudioTracks?stream.getAudioTracks():[];
+ if(!aTracks.length)return;
+
+ var el=it.audioEl;
+ if(!el){
+  for(var i=0;i<audioPool.length;i++){
+   if(!audioSlotOwner[i]&&audioPool[i]){
+    audioSlotOwner[i]=pid;
+    el=audioPool[i];
+    it.audioSlotIndex=i;
+    it.audioEl=el;
+    break;
+   }
+  }
+  if(!el){
+   el=document.createElement('audio');
+   el.autoplay=true;
+   el.playsInline=true;
+   el.setAttribute('webkit-playsinline','');
+   document.body.appendChild(el);
+   it.audioEl=el;
+   it.dynamicAudio=true;
+  }
+ }
+ if(el.srcObject!==stream){
+  el.srcObject=stream;
+  el.volume=1.0;
+  el.muted=false;
+  var p=el.play();
+  if(p&&p.catch){
+   p.catch(function(){
+    callMsg('Tocá la pantalla o OK para escuchar el audio de '+pid);
+   });
+  }
+ }else if(el.paused){
+  el.play().catch(function(){});
+ }
+}
+
+function stopAudioForPeer(pid){
+ var it=activeCalls[pid];
+ if(!it)return;
+ if(it.audioEl){
+  try{it.audioEl.pause()}catch(e){}
+  it.audioEl.srcObject=null;
+  if(it.dynamicAudio&&it.audioEl.parentNode){
+   it.audioEl.parentNode.removeChild(it.audioEl);
+  }
+  it.audioEl=null;
+ }
+ if(typeof it.audioSlotIndex==='number'){
+  delete audioSlotOwner[it.audioSlotIndex];
+  it.audioSlotIndex=null;
+ }
+}
+
+function resumeAudioOnUserAction(){
+ for(var i=0;i<audioPool.length;i++){
+  var a=audioPool[i];
+  if(a&&a.srcObject&&a.paused){
+   a.volume=1.0;a.muted=false;
+   a.play().catch(function(){});
+  }
+ }
+ for(var pid in activeCalls){
+  var it=activeCalls[pid];
+  if(it){
+   if(it.audioEl&&it.audioEl.srcObject&&it.audioEl.paused){
+    it.audioEl.play().catch(function(){});
+   }
+   if(it.vid&&it.vid.srcObject&&it.vid.paused){
+    it.vid.play().catch(function(){});
+   }
+  }
+ }
+}
+
+/* Ajuste geométrico explícito para evitar deformación vertical/horizontal en webOS Chrome 79 */
+function fitCellVideo(cell){
+ if(!cell)return;
+ var v=cell.querySelector('video');
+ if(!v)return;
+ var cw=cell.clientWidth||0,ch=cell.clientHeight||0;
+ var vw=v.videoWidth||0,vh=v.videoHeight||0;
+ if(!cw||!ch||!vw||!vh){
+  v.style.position='relative';
+  v.style.width='100%';
+  v.style.height='100%';
+  v.style.left='0px';
+  v.style.top='0px';
+  return;
+ }
+ var scale=Math.min(cw/vw,ch/vh);
+ var w=Math.round(vw*scale);
+ var h=Math.round(vh*scale);
+ v.style.position='absolute';
+ v.style.width=w+'px';
+ v.style.height=h+'px';
+ v.style.left=Math.round((cw-w)/2)+'px';
+ v.style.top=Math.round((ch-h)/2)+'px';
+}
+
+/* Dynamic Grid Layout (adaptado a pantallas horizontales y móviles verticales) */
+function updateVideoGrid(){
+ var grid=$('video-grid');
+ var cells=grid.getElementsByClassName('video-cell');
+ var n=cells.length;
+ var portrait=(window.innerHeight>window.innerWidth);
+ if(n===0){
+  $('no-remote').style.display='flex';
+ }else{
+  $('no-remote').style.display='none';
+  for(var i=0;i<n;i++){
+   var c=cells[i];
+   if(n===1){
+    c.style.width='100%';
+    c.style.height='100%';
+   }else if(n===2){
+    if(portrait){
+     c.style.width='100%';
+     c.style.height='50%';
+    }else{
+     c.style.width='50%';
+     c.style.height='100%';
+    }
+   }else if(n===3){
+    if(i===2){
+     c.style.width='100%';
+     c.style.height='50%';
+    }else{
+     c.style.width='50%';
+     c.style.height='50%';
+    }
+   }else{
+    c.style.width='50%';
+    c.style.height='50%';
+   }
+   fitCellVideo(c);
+  }
+ }
+ tick();
+}
+
+function enter(){
+ $('lobby').style.display='none';
+ $('incoming').classList.remove('active');
+ $('callview').classList.add('active');
+ if(!started){
+  started=Date.now();
+  clearInterval(timerId);
+  tick();
+  timerId=setInterval(tick,1000);
+ }
+ updateVideoGrid();
+}
+
+/* Peer mesh & DataConnection signaling */
+function getOpenDataConn(pid){
+ var list=activeDataConns[pid];
+ if(!list||!list.length)return null;
+ for(var i=0;i<list.length;i++){
+  if(list[i]&&list[i].open)return list[i];
+ }
+ return null;
+}
+
+function hasAnyDataConn(pid){
+ var list=activeDataConns[pid];
+ return !!(list&&list.length);
+}
+
+function broadcastPeerList(){
+ var peerList=[myCode];
+ for(var id in activeCalls){
+  if(peerList.indexOf(id)<0)peerList.push(id);
+ }
+ var payload={type:'PEER_LIST',peers:peerList};
+ for(var pid in activeDataConns){
+  var conn=getOpenDataConn(pid);
+  if(conn){
+   try{conn.send(payload)}catch(e){}
+  }
+ }
+}
+
+function scheduleBroadcasts(){
+ broadcastPeerList();
+ setTimeout(broadcastPeerList,800);
+ setTimeout(broadcastPeerList,2200);
+}
+
+function handleDataMessage(fromPid,data){
+ if(!data||data.type!=='PEER_LIST')return;
+ /* Sólo procesar mesh si ya estamos participando en la llamada activa */
+ if(!localStream&&!Object.keys(activeCalls).length)return;
+ var peers=data.peers||[];
+ for(var i=0;i<peers.length;i++){
+  var targetId=peers[i];
+  if(!targetId||targetId===myCode)continue;
+  if(activeCalls[targetId])continue;
+  if(Object.keys(activeCalls).length>=MAX_PARTICIPANTS-1)break;
+  /* Desempate determinista: el código menor inicia la llamada mesh al mayor */
+  if(myCode<targetId){
+   connectToMeshPeer(targetId);
+  }
+ }
+}
+
+function setupDataConnection(conn){
+ if(!conn)return;
+ var pid=conn.peer;
+ if(!activeDataConns[pid])activeDataConns[pid]=[];
+ if(activeDataConns[pid].indexOf(conn)<0)activeDataConns[pid].push(conn);
+
+ conn.on('open',function(){
+  if(Object.keys(activeCalls).length>0){
+   broadcastPeerList();
+  }
+ });
+ conn.on('data',function(data){
+  handleDataMessage(pid,data);
+ });
+ conn.on('close',function(){
+  if(activeDataConns[pid]){
+   activeDataConns[pid]=activeDataConns[pid].filter(function(x){return x!==conn});
+   if(!activeDataConns[pid].length)delete activeDataConns[pid];
+  }
+ });
+ conn.on('error',function(){
+  if(activeDataConns[pid]){
+   activeDataConns[pid]=activeDataConns[pid].filter(function(x){return x!==conn});
+   if(!activeDataConns[pid].length)delete activeDataConns[pid];
+  }
+ });
+}
+
+function connectToMeshPeer(targetId){
+ if(activeCalls[targetId])return;
+ if(Object.keys(activeCalls).length>=MAX_PARTICIPANTS-1)return;
+ console.log('Connecting mesh peer:',targetId);
+ if(!hasAnyDataConn(targetId)){
+  var conn=peer.connect(targetId);
+  setupDataConnection(conn);
+ }
+ try{
+  var opts={metadata:{mesh:true},constraints:{offerToReceiveAudio:true,offerToReceiveVideo:true}};
+  var c=localStream?peer.call(targetId,localStream,opts):peer.call(targetId,new MediaStream(),opts);
+  if(c)setupParticipant(c);
+ }catch(e){
+  console.warn('Mesh call to',targetId,'failed:',e);
+ }
+}
+
+function setupParticipant(c){
+ var pid=c.peer;
+ if(activeCalls[pid]){
+  var oldItem=activeCalls[pid];
+  if(oldItem.call===c)return;
+  try{oldItem.call.close()}catch(e){}
+  removeParticipant(pid);
+ }
+ var cell=document.createElement('div');
+ cell.className='video-cell';
+ cell.id='cell-'+pid;
+ var vid=document.createElement('video');
+ vid.autoplay=true;
+ vid.playsInline=true;
+ vid.setAttribute('webkit-playsinline','');
+ /* En móviles/PC el audio sale por el pool <audio> para evitar eco doble; en TV replicamos estado probado */
+ if(!isTV){
+  vid.muted=true;
+  vid.volume=0;
+ }else{
+  vid.muted=false;
+  vid.volume=1.0;
+ }
+ var badge=document.createElement('div');
+ badge.className='peer-badge';
+ badge.textContent='Contacto '+pid;
+ cell.appendChild(vid);
+ cell.appendChild(badge);
+ $('video-grid').appendChild(cell);
+
+ vid.addEventListener('loadedmetadata',function(){fitCellVideo(cell)});
+ vid.addEventListener('resize',function(){fitCellVideo(cell)});
+
+ activeCalls[pid]={call:c,stream:null,cell:cell,audioEl:null,audioSlotIndex:null,dynamicAudio:false,vid:vid};
+
+ c.on('stream',function(s){
+  if(!activeCalls[pid]||activeCalls[pid].call!==c)return;
+  activeCalls[pid].stream=s;
+  if(vid.srcObject!==s){
+   vid.srcObject=s;
+  }
+  play(vid);
+  routeAudioForPeer(pid,s);
+  if(s.addEventListener){
+   s.addEventListener('addtrack',function(){
+    if(activeCalls[pid]&&activeCalls[pid].call===c){
+     routeAudioForPeer(pid,s);
+     fitCellVideo(cell);
+    }
+   });
+  }
+  updateVideoGrid();
+  enter();
+  scheduleBroadcasts();
+ });
+
+ c.on('close',function(){
+  if(!activeCalls[pid]||activeCalls[pid].call!==c)return;
+  callMsg('El participante '+pid+' se desconectó.');
+  removeParticipant(pid);
+ });
+
+ c.on('error',function(e){
+  if(!activeCalls[pid]||activeCalls[pid].call!==c)return;
+  callMsg('Error con participante '+pid+': '+(e.message||'interrumpido'));
+  removeParticipant(pid);
+ });
+
+ updateVideoGrid();
+ enter();
+}
+
+function removeParticipant(pid){
+ var it=activeCalls[pid];
+ if(!it)return;
+ stopAudioForPeer(pid);
+ if(it.vid&&it.vid.srcObject){
+  try{it.vid.srcObject.getTracks().forEach(function(t){t.stop()})}catch(e){}
+  it.vid.srcObject=null;
+ }
+ if(it.cell&&it.cell.parentNode){
+  it.cell.parentNode.removeChild(it.cell);
+ }
+ delete activeCalls[pid];
+ if(activeDataConns[pid]){
+  activeDataConns[pid].forEach(function(conn){try{conn.close()}catch(e){}});
+  delete activeDataConns[pid];
+ }
+ updateVideoGrid();
+ broadcastPeerList();
+
+ if(Object.keys(activeCalls).length===0&&started){
+  callMsg('Todos los participantes salieron de la llamada.');
+  setTimeout(function(){
+   if(Object.keys(activeCalls).length===0&&started){
+    finish(false);
+   }
+  },2000);
+ }
+}
+
 function init(){
  if(typeof Peer==='undefined'){peerState('error','Error de biblioteca');msg('No se pudo cargar PeerJS. Revisá Internet.',true);return}
  myCode=code();$('my-code').textContent=myCode;
@@ -115,119 +517,242 @@ function init(){
   {urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443'],username:'openrelayproject',credential:'openrelayproject'}
  ]}});
  peer.on('open',function(){peerState('ready','Conectado');$('call-btn').disabled=false;$('device-status').textContent='Listo para llamar';msg('Compartí tu código o ingresá el de otro dispositivo.')});
- peer.on('call',function(c){if(currentCall){c.close();return}pendingCall=c;$('incoming-from').textContent='Código del contacto: '+c.peer;$('incoming').classList.add('active');startRing();setTimeout(function(){$('btn-answer').focus()},150)});
- peer.on('error',function(e){if(e.type==='unavailable-id'){peer.destroy();setTimeout(init,500);return}peerState('error','Error de conexión');msg('PeerJS: '+(e.message||e.type),true);$('call-btn').disabled=false});
+ 
+ peer.on('connection',function(conn){
+  setupDataConnection(conn);
+ });
+
+ peer.on('call',function(c){
+  /* Auto-responder llamadas de malla P2P si ya estamos dentro de una conferencia */
+  if(c.metadata&&c.metadata.mesh&&(localStream||Object.keys(activeCalls).length>0)){
+   try{c.answer(localStream||undefined)}catch(e){c.answer()}
+   setupParticipant(c);
+   if(!hasAnyDataConn(c.peer)){
+    setupDataConnection(peer.connect(c.peer));
+   }
+   return;
+  }
+  /* Límite de sala */
+  if(Object.keys(activeCalls).length>=MAX_PARTICIPANTS-1){
+   c.close();
+   callMsg('Llamada entrante rechazada: Sala llena ('+MAX_PARTICIPANTS+' participantes máx.)');
+   return;
+  }
+  pendingCall=c;
+  if(Object.keys(activeCalls).length>0){
+   $('incoming-title').textContent='Nuevo participante';
+   $('incoming-from').textContent='Código: '+c.peer+' desea unirse ('+(Object.keys(activeCalls).length+2)+'/'+MAX_PARTICIPANTS+')';
+  }else{
+   $('incoming-title').textContent='Llamada entrante';
+   $('incoming-from').textContent='Código del contacto: '+c.peer;
+  }
+  $('incoming').classList.add('active');
+  startRing();
+  setTimeout(function(){$('btn-answer').focus()},150);
+ });
+
+ peer.on('error',function(e){
+  if(e.type==='unavailable-id'){peer.destroy();setTimeout(init,500);return}
+  peerState('error','Error de conexión');
+  msg('PeerJS: '+(e.message||e.type),true);
+  $('call-btn').disabled=false;
+ });
  peer.on('disconnected',function(){peerState('waiting','Reconectando…');try{peer.reconnect()}catch(e){}});
 }
-function fitRemoteVideo(){
- var rv=$('remote-video');
- if(!rv)return;
- var vw=rv.videoWidth||0,vh=rv.videoHeight||0;
- var W=window.innerWidth||1920,H=window.innerHeight||1080;
- if(!vw||!vh){
-  rv.style.width='100%';
-  rv.style.height='100%';
-  rv.style.left='0px';
-  rv.style.top='0px';
+
+function answer(){
+ stopRing();
+ unlockAudioPool();
+ var c=pendingCall;
+ if(!c)return;
+ pendingCall=null;
+ $('incoming').classList.remove('active');
+
+ if(localStream){
+  c.answer(localStream);
+  setupParticipant(c);
+  if(!hasAnyDataConn(c.peer))setupDataConnection(peer.connect(c.peer));
+  scheduleBroadcasts();
   return;
  }
- var scale=Math.min(W/vw,H/vh);
- var w=Math.round(vw*scale);
- var h=Math.round(vh*scale);
- rv.style.width=w+'px';
- rv.style.height=h+'px';
- rv.style.left=Math.round((W-w)/2)+'px';
- rv.style.top=Math.round((H-h)/2)+'px';
-}
-var webrtcAudioCtx=null,webrtcAudioSrc=null;
-function routeRemoteAudio(stream){
- var aTracks=stream?stream.getAudioTracks():[];
- console.log('Routing remote audio. Tracks:',aTracks.length);
- var rv=$('remote-video');if(rv){rv.volume=1.0;rv.muted=false}
- var ra=$('remote-audio');
- if(ra){
-  ra.srcObject=stream;
-  ra.volume=1.0;
-  ra.muted=false;
-  var p=ra.play();
-  if(p&&p.catch)p.catch(function(e){console.warn('Audio play error:',e)});
- }
- try{
-  var A=window.AudioContext||window.webkitAudioContext;
-  if(A&&aTracks.length){
-   if(!webrtcAudioCtx||webrtcAudioCtx.state==='closed'){webrtcAudioCtx=new A()}
-   if(webrtcAudioCtx.state==='suspended'){webrtcAudioCtx.resume()}
-   if(webrtcAudioSrc){try{webrtcAudioSrc.disconnect()}catch(e){}}
-   webrtcAudioSrc=webrtcAudioCtx.createMediaStreamSource(stream);
-   webrtcAudioSrc.connect(webrtcAudioCtx.destination);
-   console.log('WebAudio pipeline connected');
+
+ msg('Solicitando acceso a cámara y micrófono…');
+ media().then(function(s){
+  setLocal(s);
+  c.answer(s);
+  setupParticipant(c);
+  if(!hasAnyDataConn(c.peer))setupDataConnection(peer.connect(c.peer));
+  scheduleBroadcasts();
+  msg('');
+ }).catch(function(e){
+  $('device-status').textContent='Sin cámara local';
+  $('device-hint').textContent=e.message;
+  try{
+   c.answer();
+   setupParticipant(c);
+   if(!hasAnyDataConn(c.peer))setupDataConnection(peer.connect(c.peer));
+   scheduleBroadcasts();
+   msg('Atendiste sin cámara local. '+e.message,true);
+  }catch(x){
+   msg('No se pudo atender: '+x.message,true);
+   c.close();
   }
- }catch(e){console.warn('WebAudio error:',e)}
-}
-function stopRemoteAudio(){
- if(webrtcAudioSrc){try{webrtcAudioSrc.disconnect()}catch(e){}webrtcAudioSrc=null}
- if(webrtcAudioCtx){try{webrtcAudioCtx.close()}catch(e){}webrtcAudioCtx=null}
- var ra=$('remote-audio');if(ra){ra.srcObject=null}
-}
-function resumeAudioOnUserAction(){
- if(webrtcAudioCtx&&webrtcAudioCtx.state==='suspended'){webrtcAudioCtx.resume()}
- var ra=$('remote-audio');if(ra&&ra.paused&&ra.srcObject){ra.play().catch(function(){})}
- var rv=$('remote-video');if(rv&&rv.paused&&rv.srcObject){rv.play().catch(function(){})}
-}
-function enter(){ $('lobby').style.display='none';$('incoming').classList.remove('active');$('callview').classList.add('active');started=Date.now();clearInterval(timerId);tick();timerId=setInterval(tick,1000);fitRemoteVideo()}
-function setup(c){
- currentCall=c;
- c.on('stream',function(s){
-  var rv=$('remote-video');
-  rv.srcObject=s;
-  $('no-remote').style.display='none';
-  play(rv);
-  routeRemoteAudio(s);
-  fitRemoteVideo();
-  enter();
  });
- c.on('close',function(){stopRing();stopRemoteAudio();finish(false)});
- c.on('error',function(e){stopRing();stopRemoteAudio();callMsg('Error de llamada: '+(e.message||'conexión interrumpida'));finish(false)});
- c.on('iceStateChanged',function(s){if(s==='failed')callMsg('No se pudo establecer conexión entre las redes.');if(s==='disconnected')callMsg('Conexión interrumpida; intentando recuperar…')});
- setTimeout(function(){if(currentCall===c)enter()},1500);
 }
-function answer(){
- stopRing();var c=pendingCall;if(!c)return;pendingCall=null;$('incoming').classList.remove('active');msg('Solicitando acceso a cámara y micrófono…');
- media().then(function(s){setLocal(s);c.answer(s);setup(c);msg('')}).catch(function(e){$('device-status').textContent='Sin cámara local';$('device-hint').textContent=e.message;try{c.answer();setup(c);msg('Atendiste sin cámara local. '+e.message,true)}catch(x){msg('No se pudo atender: '+x.message,true);c.close()}});
-}
+
 function dial(){
- var id=$('remote-code-input').value.trim().toUpperCase();if(!id){msg('Ingresá el código.',true);return}if(id.length!==6){msg('El código debe tener 6 caracteres.',true);return}if(id===myCode){msg('Ese es tu propio código.',true);return}if(!peer||!peer.open){msg('Esperá a que se conecte el servidor.',true);return}
- $('call-btn').disabled=true;msg('Solicitando acceso a cámara y micrófono…');
- media().then(function(s){setLocal(s);msg('Llamando a '+id+'…');var c;try{c=peer.call(id,s)}catch(e){msg('No se pudo iniciar: '+e.message,true);stopLocal();$('call-btn').disabled=false;return}if(!c){msg('No se pudo iniciar la llamada. Revisá el código.',true);stopLocal();$('call-btn').disabled=false;return}setup(c)}).catch(function(e){msg(e.message,true);$('device-status').textContent='Cámara no disponible';$('device-hint').textContent=e.message;$('call-btn').disabled=false});
+ unlockAudioPool();
+ var id=$('remote-code-input').value.trim().toUpperCase();
+ if(!id){msg('Ingresá el código.',true);return}
+ if(id.length!==6){msg('El código debe tener 6 caracteres.',true);return}
+ if(id===myCode){msg('Ese es tu propio código.',true);return}
+ if(activeCalls[id]){msg('Ya estás conectado con ese código.',true);return}
+ if(!peer||!peer.open){msg('Esperá a que se conecte el servidor.',true);return}
+ if(Object.keys(activeCalls).length>=MAX_PARTICIPANTS-1){msg('Límite de '+MAX_PARTICIPANTS+' participantes alcanzado.',true);return}
+
+ $('call-btn').disabled=true;
+
+ if(localStream){
+  msg('Llamando a '+id+'…');
+  if(!hasAnyDataConn(id))setupDataConnection(peer.connect(id));
+  try{
+   var c=peer.call(id,localStream,{constraints:{offerToReceiveAudio:true,offerToReceiveVideo:true}});
+   if(c)setupParticipant(c);
+   scheduleBroadcasts();
+  }catch(e){
+   msg('No se pudo llamar: '+e.message,true);
+  }
+  $('call-btn').disabled=false;
+  return;
+ }
+
+ msg('Solicitando acceso a cámara y micrófono…');
+ media().then(function(s){
+  setLocal(s);
+  msg('Llamando a '+id+'…');
+  if(!hasAnyDataConn(id))setupDataConnection(peer.connect(id));
+  var c;
+  try{c=peer.call(id,s,{constraints:{offerToReceiveAudio:true,offerToReceiveVideo:true}})}catch(e){
+   msg('No se pudo iniciar: '+e.message,true);
+   stopLocal();
+   $('call-btn').disabled=false;
+   return;
+  }
+  if(!c){
+   msg('No se pudo iniciar la llamada. Revisá el código.',true);
+   stopLocal();
+   $('call-btn').disabled=false;
+   return;
+  }
+  setupParticipant(c);
+  scheduleBroadcasts();
+ }).catch(function(e){
+  msg(e.message,true);
+  $('device-status').textContent='Cámara no disponible';
+  $('device-hint').textContent=e.message;
+  $('call-btn').disabled=false;
+ });
 }
+
 function finish(closeIt){
- stopRing();stopRemoteAudio();clearInterval(timerId);var c=currentCall;currentCall=null;if(closeIt&&c){try{c.close()}catch(e){}}
- stopLocal();var rv=$('remote-video');if(rv.srcObject){try{rv.srcObject.getTracks().forEach(function(t){t.stop()})}catch(e){}}rv.srcObject=null;$('no-remote').style.display='flex';$('callview').classList.remove('active');$('incoming').classList.remove('active');$('lobby').style.display='flex';$('call-btn').disabled=false;started=0;$('call-timer').textContent='En llamada · 0:00';audioOn=true;videoOn=true;controls();msg('Llamada finalizada.');$('remote-code-input').focus()
+ stopRing();
+ clearInterval(timerId);
+ started=0;
+ if(closeIt){
+  for(var id in activeCalls){
+   if(activeCalls[id]&&activeCalls[id].call){
+    try{activeCalls[id].call.close()}catch(e){}
+   }
+  }
+  for(var cid in activeDataConns){
+   if(activeDataConns[cid]){
+    activeDataConns[cid].forEach(function(conn){try{conn.close()}catch(e){}});
+   }
+  }
+ }
+ for(var pid in activeCalls){
+  stopAudioForPeer(pid);
+ }
+ audioSlotOwner={};
+ $('video-grid').innerHTML='';
+ activeCalls={};
+ activeDataConns={};
+ pendingCall=null;
+
+ stopLocal();
+ $('no-remote').style.display='flex';
+ $('callview').classList.remove('active');
+ $('incoming').classList.remove('active');
+ $('lobby').style.display='flex';
+ $('call-btn').disabled=false;
+ $('call-timer').textContent='En llamada · 0:00';
+ audioOn=true;
+ videoOn=true;
+ controls();
+ msg('Llamada finalizada.');
+ $('remote-code-input').focus();
 }
-function tick(){if(!started)return;var s=Math.floor((Date.now()-started)/1000),m=Math.floor(s/60);$('call-timer').textContent='En llamada · '+m+':'+(s%60<10?'0':'')+(s%60)}
-function controls(){ $('btn-cam').classList.toggle('off',!videoOn);$('btn-mic').classList.toggle('off',!audioOn);$('btn-cam').textContent=videoOn?'📷':'🚫';$('btn-mic').textContent=audioOn?'🎙️':'🔇'}
-$('btn-answer').onclick=answer;$('btn-reject').onclick=function(){stopRing();$('incoming').classList.remove('active');if(pendingCall){pendingCall.close();pendingCall=null}};
-$('call-btn').onclick=dial;$('remote-code-input').oninput=function(){this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')};$('remote-code-input').onkeydown=function(e){if(e.key==='Enter')dial()};
+
+function tick(){
+ if(!started)return;
+ var s=Math.floor((Date.now()-started)/1000),m=Math.floor(s/60);
+ var totalPeers=Object.keys(activeCalls).length+1;
+ $('call-timer').textContent='Sala '+myCode+' ('+totalPeers+' pers.) · '+m+':'+(s%60<10?'0':'')+(s%60);
+}
+
+function controls(){
+ $('btn-cam').classList.toggle('off',!videoOn);
+ $('btn-mic').classList.toggle('off',!audioOn);
+ $('btn-cam').textContent=videoOn?'📷':'🚫';
+ $('btn-mic').textContent=audioOn?'🎙️':'🔇';
+}
+
+$('btn-answer').onclick=answer;
+$('btn-reject').onclick=function(){
+ stopRing();
+ $('incoming').classList.remove('active');
+ if(pendingCall){
+  try{pendingCall.close()}catch(e){}
+  pendingCall=null;
+ }
+};
+$('call-btn').onclick=dial;
+$('remote-code-input').oninput=function(){this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')};
+$('remote-code-input').onkeydown=function(e){if(e.key==='Enter')dial()};
 $('btn-end').onclick=function(){finish(true)};
 $('btn-cam').onclick=function(){if(!localStream)return;videoOn=!videoOn;localStream.getVideoTracks().forEach(function(t){t.enabled=videoOn});controls()};
 $('btn-mic').onclick=function(){if(!localStream)return;audioOn=!audioOn;localStream.getAudioTracks().forEach(function(t){t.enabled=audioOn});controls()};
-$('btn-fs').onclick=function(){var el=document.documentElement;if(!document.fullscreenElement){if(el.requestFullscreen)el.requestFullscreen().catch(function(){});else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen()}else if(document.exitFullscreen)document.exitFullscreen()};
+$('btn-fs').onclick=function(){
+ var el=document.documentElement;
+ if(!document.fullscreenElement){
+  if(el.requestFullscreen)el.requestFullscreen().catch(function(){});
+  else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();
+ }else if(document.exitFullscreen){
+  document.exitFullscreen();
+ }
+};
+
 $('callview').onclick=function(){resumeAudioOnUserAction()};
-var remoteVid=$('remote-video');
-if(remoteVid){
- remoteVid.addEventListener('loadedmetadata',fitRemoteVideo);
- remoteVid.addEventListener('resize',fitRemoteVideo);
-}
-window.addEventListener('resize',fitRemoteVideo);
+document.addEventListener('touchstart',resumeAudioOnUserAction,{passive:true});
+window.addEventListener('resize',updateVideoGrid);
+
 document.addEventListener('keydown',function(e){
  resumeAudioOnUserAction();
  if(e.key==='Escape'&&$('callview').classList.contains('active')){finish(true);return}
  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].indexOf(e.key)<0)return;
  var a=Array.prototype.slice.call(document.querySelectorAll('button:not(:disabled),input:not(:disabled)')).filter(function(x){return x.offsetParent!==null});
  var i=a.indexOf(document.activeElement);if(i<0){if(a.length)a[0].focus();return}
- i=(e.key==='ArrowLeft'||e.key==='ArrowUp')?(i-1+a.length)%a.length:(i+1)%a.length;a[i].focus();e.preventDefault()
+ i=(e.key==='ArrowLeft'||e.key==='ArrowUp')?(i-1+a.length)%a.length:(i+1)%a.length;
+ a[i].focus();
+ e.preventDefault();
 });
-window.addEventListener('beforeunload',function(){stopRing();stopRemoteAudio();try{if(currentCall)currentCall.close();if(peer)peer.destroy()}catch(e){}stopLocal()});
+
+window.addEventListener('beforeunload',function(){
+ stopRing();
+ finish(true);
+ try{if(peer)peer.destroy()}catch(e){}
+});
+
 init();
 })();
 </script></body></html>
